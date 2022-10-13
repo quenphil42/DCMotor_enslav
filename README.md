@@ -10,4 +10,7 @@ User defined Variables are written with a capital letter on each word fro easy i
 To start off, we configure the NUCLEO pins to the configuration givven right bellow:
 ![image](https://user-images.githubusercontent.com/113909661/195544779-ca40b81b-0b3d-45dd-8a04-904a3a217c6b.png)
 
+## 2. UART setup for character echoing
 
+We setup the UART2 to give the user an echo of what key is pressed.
+For this, here are some useful ASCII values to remember: 
