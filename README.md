@@ -4,7 +4,7 @@ This project is based on a practical training at ENSEA. The project objectives a
 We will be using the NUCLEO-G474RE board with a custom made shield. The shield is required to control the inverter.
 The team used Doxygen as documentation generation software.
 User defined values are set via wildcards (ex: int a = 256; ==> int a = BUFFER_SIZE;)
-User defined Variables are written with a capital letter on each word fro easy identification (ex: int userDefinedVariable;)
+User defined Variables are written with a capital letter on each word for easy identification (ex: int userDefinedVariable;)
 
 ## 1. Config 
 To start off, we configure the NUCLEO pins to the configuration givven right bellow:
