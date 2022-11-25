@@ -18,12 +18,17 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "shell.h"
+#include "shell_fonctions.h"
+
+#include "commandeMCC.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,6 +38,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,7 +60,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+int it_button = 0;
 /* USER CODE END 0 */
 
 /**
@@ -85,8 +91,27 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_LPUART1_UART_Init();
+  MX_TIM1_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  /* USER CODE END 2 - Shell*/
+
+  HAL_TIM_Base_Start_IT(&htim1);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
+  HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
+
+
+  //int alpha = 0; //alpha varie de 0 à 1024 et coresspond au rapport cyclique de la PWM
+
+  /* USER CODE BEGIN 2 - Shell*/
+
+  shell_init();
+  shell_init_fonctions();
+
+
 
   /* USER CODE END 2 */
 
@@ -94,6 +119,21 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  shell_run();
+
+	  if (it_button)
+	  {
+		  Init_Onduleur(1, "Init_Onduleur");
+		  printf("Onduleur initialise par button \r\n");
+		  it_button = 0;
+	  }
+	  //swing();
+	  /*
+	  HAL_Delay(200);
+	  alpha = (alpha+100)%1024;
+	  TIM1->CCR1 = alpha;
+	  TIM1->CCR2 = 1023-alpha;
+	  */
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -121,8 +161,8 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV6;
-  RCC_OscInitStruct.PLL.PLLN = 85;
+  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV3;
+  RCC_OscInitStruct.PLL.PLLN = 40;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
   RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
@@ -147,6 +187,18 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+int __io_putchar(int ch) //COM Serial via printf
+{
+	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
+	return ch;
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)  // <----- The ISR Function We're Looking For!
+{
+	it_button = 1;
+	printf("CallBack Test\r\n");
+}
 
 /* USER CODE END 4 */
 
