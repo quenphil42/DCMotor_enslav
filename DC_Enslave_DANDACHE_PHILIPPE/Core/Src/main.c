@@ -197,7 +197,6 @@ int __io_putchar(int ch) //COM Serial via printf
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)  // <----- The ISR Function We're Looking For!
 {
 	it_button = 1;
-	printf("CallBack Test\r\n");
 }
 
 /* USER CODE END 4 */

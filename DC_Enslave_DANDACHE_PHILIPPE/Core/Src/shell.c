@@ -23,6 +23,8 @@ static shell_func_t shell_func_list[SHELL_FUNC_LIST_MAX_SIZE];
 
 static char print_buffer[BUFFER_SIZE];
 
+extern int it_button;
+
 static char uart_read() {
 	char c;
 
@@ -108,13 +110,22 @@ int shell_run() {
 
 	static char cmd_buffer[BUFFER_SIZE];
 
-	//while (1) {
+	while (1) {
 		uart_write(prompt, 2);
 		reading = 1;
 
 		while(reading) {
+
 			char c = uart_read();
 			int size;
+
+			if(it_button)
+			{
+				cmd_buffer = "";
+				c = '\r';
+				it _button = 0;
+			}
+
 
 			switch (c) {
 			//process RETURN key
@@ -145,9 +156,38 @@ int shell_run() {
 					uart_write(&c, 1);
 					cmd_buffer[pos++] = c; //store
 				}
+
 			}
+
 		}
+
 		shell_exec(cmd_buffer);
-	//}
+	}
+
 	return 0;
+}
+
+
+void exti_start()
+{
+	/*
+	//printf("CallBack Test\r\n");
+	static char cmd_buffer_exti[BUFFER_SIZE] = "s";
+	static char print_buffer_exti[BUFFER_SIZE] = "s \r\n";
+
+	int size = snprintf (print_buffer_exti, BUFFER_SIZE, ":%s\r\n", cmd_buffer_exti);
+	uart_write(print_buffer, size);
+
+	cmd_buffer_exti[2] = 0;
+
+	size = snprintf (print_buffer_exti, BUFFER_SIZE, ":%s\r\n", cmd_buffer_exti);
+	uart_write(print_buffer_exti, size);
+
+	shell_exec(cmd_buffer_exti);
+	//shell_run();
+	 * */
+	static char print_buffer_exti[BUFFER_SIZE] = "s\0";
+	uart_write(print_buffer_exti, BUFFER_SIZE);
+	shell_exec(print_buffer_exti);
+
 }
