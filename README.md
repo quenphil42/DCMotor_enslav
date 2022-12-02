@@ -12,6 +12,7 @@ To start off, we configure the NUCLEO pins to the configuration givven right bel
 
 On the custom made PCB, we need to connect the pins as following:
 ![image](https://user-images.githubusercontent.com/113909661/205322873-f4ddeada-e1db-4ac6-acd8-8282e608288a.png)
+
 Remember to plug in the DC adapter for the custom board. 
 
 ## 2. UART setup for character echoing
