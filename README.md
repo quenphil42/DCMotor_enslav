@@ -10,7 +10,12 @@ User defined Variables are written with a capital letter on each word for easy i
 To start off, we configure the NUCLEO pins to the configuration givven right bellow:
 ![image](https://user-images.githubusercontent.com/113909661/195544779-ca40b81b-0b3d-45dd-8a04-904a3a217c6b.png)
 
+On the custom made PCB, we need to connect the pins as following:
+![image](https://user-images.githubusercontent.com/113909661/205322873-f4ddeada-e1db-4ac6-acd8-8282e608288a.png)
+Remember to plug in the DC adapter for the custom board. 
+
 ## 2. UART setup for character echoing
 
 We setup the UART2 to give the user an echo of what key is pressed.
-For this, here are some useful ASCII values to remember: 
+
+
