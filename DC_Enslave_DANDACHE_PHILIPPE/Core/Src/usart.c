@@ -21,7 +21,19 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
+uint8_t uartRxReceived;
+uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
+uint8_t uartTxBuffer[UART_TX_BUFFER_SIZE];
+uint8_t stringSize;
 
+/**
+  * @brief  Function called at each new character received
+  * @retval None
+  */
+void HAL_UART_RxCpltCallback (UART_HandleTypeDef * huart){
+	uartRxReceived = 1;
+	HAL_UART_Receive_IT(&huart2, uartRxBuffer, UART_RX_BUFFER_SIZE);
+}
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart2;

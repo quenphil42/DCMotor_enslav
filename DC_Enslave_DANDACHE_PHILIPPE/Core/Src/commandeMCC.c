@@ -1,6 +1,7 @@
 #include "commandeMCC.h"
+#include "usart.h"
 
-void Swing(int argc, char ** argv)
+void Swing()
 {
 	for(int j=0; j<3; j++)
 	{
@@ -26,22 +27,24 @@ void Swing(int argc, char ** argv)
 	return 0;
 }
 
-void SetAlpha(int argc, char ** argv)
-
+void SetAlpha(char * argv)
 {
-	int alpha = atoi(argv[1]);
+	int alpha = atoi(argv);
 	if (alpha>=0 && alpha<=100)
 	{
 		int CCR_value = alpha*ARR_MAX_VALUE/100;
 		TIM1->CCR1 = CCR_value;
 		TIM1->CCR2 = ARR_MAX_VALUE - 1 - CCR_value;
 	}
-	else printf("Error : alpha doit etre entre 0 et 100 \r\n");
+	else
+	{
+		uint8_t text[]="Error : alpha 0-100";
+		HAL_UART_Transmit(&huart2, text, sizeof(text), HAL_MAX_DELAY);
+	}
 
-	return 0;
 }
 
-void Init_Onduleur(int argc, char ** argv)
+void Init_Onduleur()
 {
 	TIM1->CCR1 = ARR_MAX_VALUE/2;
 	TIM1->CCR2 = ARR_MAX_VALUE - 1 - ARR_MAX_VALUE/2;

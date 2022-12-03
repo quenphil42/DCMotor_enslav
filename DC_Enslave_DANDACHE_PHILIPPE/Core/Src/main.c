@@ -18,6 +18,8 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "adc.h"
+#include "dma.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -25,10 +27,13 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "shell.h"
-#include "shell_fonctions.h"
-
+//#include "shell.h"
+#include "shell2.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "commandeMCC.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,7 +54,14 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+int it_button = 0;
+int adcCbck = 0;
 
+extern uint8_t uartRxReceived;
+extern uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
+extern uint8_t uartTxBuffer[UART_TX_BUFFER_SIZE];
+
+int adcBuffer[2];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -60,7 +72,8 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int it_button = 0;
+
+
 /* USER CODE END 0 */
 
 /**
@@ -91,8 +104,10 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_TIM1_Init();
   MX_USART2_UART_Init();
+  MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 - Shell*/
@@ -103,37 +118,45 @@ int main(void)
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
 
+  HAL_UART_Receive_IT(&huart2, uartRxBuffer, UART_RX_BUFFER_SIZE);
+  HAL_Delay(1);
+  shellInit();
 
-  //int alpha = 0; //alpha varie de 0 à 1024 et coresspond au rapport cyclique de la PWM
-
-  /* USER CODE BEGIN 2 - Shell*/
-
-  shell_init();
-  shell_init_fonctions();
-
-
-
+  HAL_ADCEx_Calibration_Start (&hadc1, ADC_SINGLE_ENDED);
+  HAL_ADC_Start_DMA(&hadc1, &adcBuffer, 2);
+  //HAL_TIM_Base_Start(&htim1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  shell_run();
+// SuperLoop inside the while(1), only flag changed from interrupt could launch functions
+ 		if(uartRxReceived){
+  			if(shellGetChar()){
+  				shellExec();
+  				shellPrompt();
+  			}
+  			uartRxReceived = 0;
+  		}
 
-	  if (it_button)
-	  {
-		  Init_Onduleur(1, "Init_Onduleur");
-		  printf("Onduleur initialise par button \r\n");
-		  it_button = 0;
-	  }
-	  //swing();
-	  /*
-	  HAL_Delay(200);
-	  alpha = (alpha+100)%1024;
-	  TIM1->CCR1 = alpha;
-	  TIM1->CCR2 = 1023-alpha;
-	  */
+ 		if(it_button==1)
+ 		{
+ 			uint8_t text[]="interruption \r\nquali>";
+ 			HAL_UART_Transmit(&huart2, text, sizeof(text), HAL_MAX_DELAY);
+ 			Init_Onduleur();
+ 			it_button = 0;
+ 		}
+ 		if(adcCbck == 1)
+ 		{
+ 			uint8_t test[]="test \r\nquali>";
+ 			HAL_UART_Transmit(&huart2, test, sizeof(test), HAL_MAX_DELAY);
+ 			uint8_t text[]="interruption \r\nquali>";
+ 			sprintf((char *)text, "%1.5f\r\n", ((float)adcBuffer[0])*3.3/4096);
+ 			HAL_UART_Transmit(&huart2, text, sizeof(text), HAL_MAX_DELAY);
+ 			adcCbck = 0;
+ 		}
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -187,6 +210,24 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
+{
+	adcCbck = 1;
+}
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+	/* USER CODE BEGIN Callback 0 */
+
+	/* USER CODE END Callback 0 */
+	if (htim->Instance == TIM6) {
+		HAL_IncTick();
+	}
+	/* USER CODE BEGIN Callback 1 */
+
+	/* USER CODE END Callback 1 */
+}
 
 int __io_putchar(int ch) //COM Serial via printf
 {

@@ -29,7 +29,8 @@ extern "C" {
 #include "main.h"
 
 /* USER CODE BEGIN Includes */
-
+#define UART_TX_BUFFER_SIZE 64
+#define UART_RX_BUFFER_SIZE 1
 /* USER CODE END Includes */
 
 extern UART_HandleTypeDef huart2;
