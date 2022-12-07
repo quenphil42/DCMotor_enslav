@@ -33,7 +33,9 @@ const uint8_t help[]=
 		"pinout : print all pins used\r\n"
 		"swing : \r\n"
 		"init_Onduleur : \r\n"
-		"setAlpha : \r\n";
+		"setAlpha : \r\n"
+		"getCurrent : \r\n"
+		"getEncodeur : \r\n";
 
 const uint8_t pinout[]=
 		"\r\n*-------------------------------*"
@@ -53,6 +55,8 @@ const uint8_t swing[]="Swing DC Motor Voltage\r\n";
 const uint8_t init_Onduleur[]="Init Onduleur\r\n";
 const uint8_t setAlpha[]="Enter the alpha command to set speed\r\n";
 const uint8_t cmdNotFound[]="Command not found\r\n";
+const uint8_t getCurrent[] = "print the current value\r\n";
+const uint8_t getEncodeur[] = "print the angle position \r\n";
 
 char cmdBuffer[CMD_BUFFER_SIZE];
 extern uint8_t 	uartRxBuffer[UART_RX_BUFFER_SIZE];
@@ -171,6 +175,16 @@ void shellExec(void){
 	{
 		HAL_UART_Transmit(&huart2, setAlpha, sizeof(setAlpha), HAL_MAX_DELAY);
 		SetAlpha(argv[1]);
+	}
+	else if(strcmp(argv[0],"getCurrent")==0)
+	{
+		HAL_UART_Transmit(&huart2, getCurrent, sizeof(getCurrent), HAL_MAX_DELAY);
+		GetCurrent();
+	}
+	else if(strcmp(argv[0],"getEncodeur")==0)
+	{
+		HAL_UART_Transmit(&huart2, getCurrent, sizeof(getCurrent), HAL_MAX_DELAY);
+		GetEncodeur();
 	}
 	else{
 		shellCmdNotFound();

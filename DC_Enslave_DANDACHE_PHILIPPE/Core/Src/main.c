@@ -56,12 +56,15 @@
 /* USER CODE BEGIN PV */
 int it_button = 0;
 int adcCbck = 0;
+int it_tim3 = 0;
+int speed = 0;
+int angle = 0;
 
 extern uint8_t uartRxReceived;
 extern uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
 extern uint8_t uartTxBuffer[UART_TX_BUFFER_SIZE];
 
-int adcBuffer[2];
+uint32_t adcBuffer[1] = {0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -108,6 +111,8 @@ int main(void)
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   MX_ADC1_Init();
+  MX_TIM2_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 - Shell*/
@@ -123,8 +128,13 @@ int main(void)
   shellInit();
 
   HAL_ADCEx_Calibration_Start (&hadc1, ADC_SINGLE_ENDED);
-  HAL_ADC_Start_DMA(&hadc1, &adcBuffer, 2);
+  HAL_ADC_Start_DMA(&hadc1, adcBuffer, 1);
   //HAL_TIM_Base_Start(&htim1);
+
+  HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
+
+  HAL_TIM_Base_Start_IT(&htim3);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -149,12 +159,23 @@ int main(void)
  		}
  		if(adcCbck == 1)
  		{
- 			uint8_t test[]="test \r\nquali>";
- 			HAL_UART_Transmit(&huart2, test, sizeof(test), HAL_MAX_DELAY);
- 			uint8_t text[]="interruption \r\nquali>";
- 			sprintf((char *)text, "%1.5f\r\n", ((float)adcBuffer[0])*3.3/4096);
- 			HAL_UART_Transmit(&huart2, text, sizeof(text), HAL_MAX_DELAY);
+ 			//uint8_t test[]="test \r\nquali>";
+ 			//HAL_UART_Transmit(&huart2, test, sizeof(test), HAL_MAX_DELAY);
+ 			//uint8_t text[]="interruption \r\nquali>";
+ 			//sprintf((char *)text, "%1.5f\r\n", ((float)adcBuffer[0])*3.3/4096);
+ 			//HAL_UART_Transmit(&huart2, text, sizeof(text), HAL_MAX_DELAY);
+
+ 			//GetCurrent();
  			adcCbck = 0;
+ 		}
+ 		if(it_tim3 ==1)
+ 		{
+
+ 			GetCurrent();
+			GetSpeed();
+			GetEncodeur();
+
+ 			it_tim3 = 0;
  		}
 
     /* USER CODE END WHILE */
@@ -225,7 +246,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		HAL_IncTick();
 	}
 	/* USER CODE BEGIN Callback 1 */
-
+	if (htim->Instance == TIM3)
+	{
+		it_tim3 = 1;
+	}
 	/* USER CODE END Callback 1 */
 }
 

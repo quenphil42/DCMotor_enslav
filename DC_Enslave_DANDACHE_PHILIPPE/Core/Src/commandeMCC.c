@@ -1,5 +1,10 @@
 #include "commandeMCC.h"
 #include "usart.h"
+#include "shell2.h"
+
+extern uint32_t adcBuffer[1];
+extern int angle;
+extern int speed;
 
 void Swing()
 {
@@ -24,7 +29,6 @@ void Swing()
 			HAL_Delay(5);
 		}
 	}
-	return 0;
 }
 
 void SetAlpha(char * argv)
@@ -51,4 +55,39 @@ void Init_Onduleur()
 	HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin,SET);
 	HAL_Delay(1);
 	HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin,RESET);
+}
+
+void GetCurrent()
+{
+	uint8_t text[CMD_BUFFER_SIZE]="current = ";
+	sprintf( (char *)text, "current = %1.3f \r\n", (float)(adcBuffer[0])*3.3/4096 );
+	//sprintf( (char *)text, "current = %d \r\n", adcBuffer[0] );
+	HAL_UART_Transmit(&huart2, text, sizeof(text), HAL_MAX_DELAY);
+}
+
+void ReadEncodeur()
+{
+	angle = ((TIM2->CNT));
+}
+
+void ReadSpeed()
+{
+	speed = ((TIM2->CNT))-Mid_Period_TIM2;
+	TIM2->CNT = Mid_Period_TIM2;
+}
+
+void GetEncodeur()
+{
+	uint8_t MSG[50] = {'\0'};
+	ReadEncodeur();
+	sprintf(MSG, "Encoder Ticks = %d\n\r", angle);
+	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
+}
+
+void GetSpeed()
+{
+	ReadSpeed();
+	uint8_t MSG[50] = {'\0'};
+	sprintf(MSG, "Speed = %d incr/s\n\r", (speed));
+	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
 }
