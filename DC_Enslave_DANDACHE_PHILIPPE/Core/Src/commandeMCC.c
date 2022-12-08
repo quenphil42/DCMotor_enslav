@@ -5,6 +5,8 @@
 extern uint32_t adcBuffer[1];
 extern int angle;
 extern int speed;
+extern int alpha;
+extern int overCurrent;
 
 void Swing()
 {
@@ -33,10 +35,12 @@ void Swing()
 
 void SetAlpha(char * argv)
 {
-	int alpha = atoi(argv);
-	if (alpha>=0 && alpha<=100)
+	if(!overCurrent) alpha = atoi(argv);
+
+	int alpha2 = atoi(argv);
+	if (alpha2>=0 && alpha2<=100)
 	{
-		int CCR_value = alpha*ARR_MAX_VALUE/100;
+		int CCR_value = alpha2*ARR_MAX_VALUE/100;
 		TIM1->CCR1 = CCR_value;
 		TIM1->CCR2 = ARR_MAX_VALUE - 1 - CCR_value;
 	}
@@ -48,6 +52,7 @@ void SetAlpha(char * argv)
 
 }
 
+
 void Init_Onduleur()
 {
 	TIM1->CCR1 = ARR_MAX_VALUE/2;
@@ -57,12 +62,9 @@ void Init_Onduleur()
 	HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin,RESET);
 }
 
-void GetCurrent()
+float GetCurrent()
 {
-	uint8_t text[CMD_BUFFER_SIZE]="current = ";
-	sprintf( (char *)text, "current = %1.3f \r\n", (float)(adcBuffer[0])*3.3/4096 );
-	//sprintf( (char *)text, "current = %d \r\n", adcBuffer[0] );
-	HAL_UART_Transmit(&huart2, text, sizeof(text), HAL_MAX_DELAY);
+	return (3137-(float)(adcBuffer[0]))*3.3*12/4096;
 }
 
 void ReadEncodeur()
@@ -72,22 +74,21 @@ void ReadEncodeur()
 
 void ReadSpeed()
 {
-	speed = ((TIM2->CNT))-Mid_Period_TIM2;
+	speed = ((TIM2->CNT))- Mid_Period_TIM2;
 	TIM2->CNT = Mid_Period_TIM2;
 }
 
-void GetEncodeur()
-{
-	uint8_t MSG[50] = {'\0'};
-	ReadEncodeur();
-	sprintf(MSG, "Encoder Ticks = %d\n\r", angle);
-	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
-}
 
-void GetSpeed()
+void PrintData()
 {
-	ReadSpeed();
-	uint8_t MSG[50] = {'\0'};
-	sprintf(MSG, "Speed = %d incr/s\n\r", (speed));
+	uint8_t MSG[CMD_BUFFER_SIZE] = {'\0'};
+
+	sprintf((char *)MSG, "Encoder Ticks = %d\n\r", angle);
 	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
+
+	sprintf((char *)MSG, "Speed = %d incr/s\n\r", (speed));
+	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
+
+	sprintf( (char *)MSG, "current = %1.3f \r\n",(3137-(float)(adcBuffer[0]))*3.3*12/4096);
+	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), HAL_MAX_DELAY);
 }

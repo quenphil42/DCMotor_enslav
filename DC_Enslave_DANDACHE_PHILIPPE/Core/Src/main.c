@@ -34,6 +34,7 @@
 #include <string.h>
 #include "commandeMCC.h"
 
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,8 +58,12 @@
 int it_button = 0;
 int adcCbck = 0;
 int it_tim3 = 0;
+int it_tim4 = 0;
 int speed = 0;
 int angle = 0;
+int enPrint = 0;
+int alpha = 50;
+int overCurrent = 0;
 
 extern uint8_t uartRxReceived;
 extern uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
@@ -113,6 +118,7 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM2_Init();
   MX_TIM3_Init();
+  MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 - Shell*/
@@ -123,17 +129,21 @@ int main(void)
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
 
+
   HAL_UART_Receive_IT(&huart2, uartRxBuffer, UART_RX_BUFFER_SIZE);
+
+
   HAL_Delay(1);
   shellInit();
 
   HAL_ADCEx_Calibration_Start (&hadc1, ADC_SINGLE_ENDED);
   HAL_ADC_Start_DMA(&hadc1, adcBuffer, 1);
-  //HAL_TIM_Base_Start(&htim1);
 
   HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
 
   HAL_TIM_Base_Start_IT(&htim3);
+
+  HAL_TIM_Base_Start_IT(&htim4);
 
   /* USER CODE END 2 */
 
@@ -152,28 +162,46 @@ int main(void)
 
  		if(it_button==1)
  		{
- 			uint8_t text[]="interruption \r\nquali>";
- 			HAL_UART_Transmit(&huart2, text, sizeof(text), HAL_MAX_DELAY);
- 			Init_Onduleur();
+ 			//uint8_t text[]="interruption \r\nquali>";
+ 			//HAL_UART_Transmit(&huart2, text, sizeof(text), HAL_MAX_DELAY);
+ 			//Init_Onduleur();
+
+ 			if (enPrint) enPrint = 0;
+ 			else enPrint = 1;
+
  			it_button = 0;
  		}
  		if(adcCbck == 1)
  		{
- 			//uint8_t test[]="test \r\nquali>";
- 			//HAL_UART_Transmit(&huart2, test, sizeof(test), HAL_MAX_DELAY);
- 			//uint8_t text[]="interruption \r\nquali>";
- 			//sprintf((char *)text, "%1.5f\r\n", ((float)adcBuffer[0])*3.3/4096);
- 			//HAL_UART_Transmit(&huart2, text, sizeof(text), HAL_MAX_DELAY);
 
- 			//GetCurrent();
  			adcCbck = 0;
  		}
- 		if(it_tim3 ==1)
+
+ 		if(it_tim4)
+ 		{
+ 			if ((GetCurrent()>CURRENT_MAX_VALUE) & (!overCurrent))
+ 			{
+ 				TIM1->CCR1 = ARR_MAX_VALUE/2;	//LE PROBLEME EST ICI
+ 				TIM1->CCR2 = ARR_MAX_VALUE/2;	//DEMANDER DE REVENIR A 0 DEMANDE TROP DE COURANT (FREIN), IL FAUT LAISSER EN ROUE LIBRE
+ 				overCurrent = 1;
+ 			}
+ 			else if ((GetCurrent()<CURRENT_MAX_VALUE) & (overCurrent))
+ 			{
+ 				overCurrent = 0;
+ 			}
+
+ 			it_tim4 = 0;
+ 		}
+
+ 		if(it_tim3)
  		{
 
- 			GetCurrent();
-			GetSpeed();
-			GetEncodeur();
+ 			//GetCurrent();
+			ReadEncodeur();
+			ReadSpeed();
+
+			if(enPrint)PrintData();
+
 
  			it_tim3 = 0;
  		}
@@ -249,6 +277,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM3)
 	{
 		it_tim3 = 1;
+	}
+	if (htim->Instance == TIM4)
+	{
+		it_tim4 = 1;
 	}
 	/* USER CODE END Callback 1 */
 }
