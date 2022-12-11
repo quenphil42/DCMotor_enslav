@@ -5,8 +5,9 @@
 extern uint32_t adcBuffer[1];
 extern int angle;
 extern int speed;
-extern int alpha;
-extern int overCurrent;
+extern float i_consigne;
+extern float e_n[2];
+extern float i_n[2];
 
 void Swing()
 {
@@ -35,12 +36,11 @@ void Swing()
 
 void SetAlpha(char * argv)
 {
-	if(!overCurrent) alpha = atoi(argv);
+	int alpha = atoi(argv);
 
-	int alpha2 = atoi(argv);
-	if (alpha2>=0 && alpha2<=100)
+	if (alpha>=0 && alpha<=100)
 	{
-		int CCR_value = alpha2*ARR_MAX_VALUE/100;
+		int CCR_value = alpha*ARR_MAX_VALUE/100;
 		TIM1->CCR1 = CCR_value;
 		TIM1->CCR2 = ARR_MAX_VALUE - 1 - CCR_value;
 	}
@@ -52,6 +52,11 @@ void SetAlpha(char * argv)
 
 }
 
+void SetCurrent(char * argv)
+{
+	i_consigne = atoi(argv);
+}
+
 
 void Init_Onduleur()
 {
@@ -60,11 +65,13 @@ void Init_Onduleur()
 	HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin,SET);
 	HAL_Delay(1);
 	HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin,RESET);
+	e_n[0] = 0;
+	i_n[0] = 0.5;
 }
 
 float GetCurrent()
 {
-	return (3137-(float)(adcBuffer[0]))*3.3*12/4096;
+	return -(3137-(float)(adcBuffer[0]))*3.3*12/4096;
 }
 
 void ReadEncodeur()
@@ -86,7 +93,7 @@ void PrintData()
 	sprintf((char *)MSG, "Encoder Ticks = %d\n\r", angle);
 	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
 
-	sprintf((char *)MSG, "Speed = %d incr/s\n\r", (speed));
+	sprintf((char *)MSG, "Speed = %f tr/min\n\r", 0.0153 * speed);
 	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
 
 	sprintf( (char *)MSG, "current = %1.3f \r\n",(3137-(float)(adcBuffer[0]))*3.3*12/4096);

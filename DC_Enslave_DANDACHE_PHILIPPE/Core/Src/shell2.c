@@ -193,6 +193,11 @@ void shellExec(void){
 		HAL_UART_Transmit(&huart2, readSpeed, sizeof(readSpeed), HAL_MAX_DELAY);
 		ReadSpeed();
 	}
+	else if(strcmp(argv[0],"setCurrent")==0)
+		{
+			HAL_UART_Transmit(&huart2, readSpeed, sizeof(readSpeed), HAL_MAX_DELAY);
+			SetCurrent(argv[1]);
+		}
 	else{
 		shellCmdNotFound();
 	}

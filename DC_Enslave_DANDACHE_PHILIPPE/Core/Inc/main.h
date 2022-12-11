@@ -76,7 +76,12 @@ void Error_Handler(void);
 #define ENC_VOIEB_Pin GPIO_PIN_3
 #define ENC_VOIEB_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
+
 #define ARR_MAX_VALUE 1024
+
+/* PID Controller parameters current*/
+
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

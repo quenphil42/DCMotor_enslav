@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "commandeMCC.h"
+#include "PID.h"
 
 
 /* USER CODE END Includes */
@@ -44,7 +45,8 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define Kp 1.0	//5.64616
+#define Ki 0.00	//29.09067
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -55,15 +57,19 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
+
 int it_button = 0;
 int adcCbck = 0;
+int it_tim1 = 0;
 int it_tim3 = 0;
 int it_tim4 = 0;
 int speed = 0;
 int angle = 0;
-int enPrint = 0;
-int alpha = 50;
-int overCurrent = 0;
+float e_n[2] = {0,0};
+float i_n[2] = {0.5,0.5};
+
+float alphaPID = 0.5;
+float i_consigne = 0;
 
 extern uint8_t uartRxReceived;
 extern uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
@@ -91,6 +97,7 @@ void SystemClock_Config(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	int enPrint = 0;
 
   /* USER CODE END 1 */
 
@@ -123,28 +130,43 @@ int main(void)
 
   /* USER CODE END 2 - Shell*/
 
+  //Commande PWM
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
 
-
+  //UART
   HAL_UART_Receive_IT(&huart2, uartRxBuffer, UART_RX_BUFFER_SIZE);
 
-
+  //SHELL
   HAL_Delay(1);
   shellInit();
 
+  //ADC
   HAL_ADCEx_Calibration_Start (&hadc1, ADC_SINGLE_ENDED);
   HAL_ADC_Start_DMA(&hadc1, adcBuffer, 1);
 
+  //TIMER
   HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
 
   HAL_TIM_Base_Start_IT(&htim3);
 
   HAL_TIM_Base_Start_IT(&htim4);
 
+  //PID
+  /*PIDController pidCurrent = { 	PID_KP, PID_KI, PID_KD,
+                        		PID_TAU,
+								PID_LIM_MIN, PID_LIM_MAX,
+								PID_LIM_MIN_INT, PID_LIM_MAX_INT,
+								SAMPLE_TIME_S
+  	  	  	  	  	  	  	  };*/
+
+  //PIDController_Init(&pidCurrent);
+
+
+  float p_n = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -177,26 +199,38 @@ int main(void)
  			adcCbck = 0;
  		}
 
- 		if(it_tim4)
+ 		if(it_tim1)
  		{
- 			if ((GetCurrent()>CURRENT_MAX_VALUE) & (!overCurrent))
- 			{
- 				TIM1->CCR1 = ARR_MAX_VALUE/2;	//LE PROBLEME EST ICI
- 				TIM1->CCR2 = ARR_MAX_VALUE/2;	//DEMANDER DE REVENIR A 0 DEMANDE TROP DE COURANT (FREIN), IL FAUT LAISSER EN ROUE LIBRE
- 				overCurrent = 1;
- 			}
- 			else if ((GetCurrent()<CURRENT_MAX_VALUE) & (overCurrent))
- 			{
- 				overCurrent = 0;
- 			}
+ 			i_consigne = 0.5;
+ 			e_n[1] = i_consigne ;//- GetCurrent();
 
- 			it_tim4 = 0;
+ 			p_n = Kp * e_n[1];
+ 			i_n[1] = Ki * TIM4_PERIOD / 2 * (e_n[1] + e_n[0]) + i_n[0];
+
+ 			if(i_n[1]>1) i_n[1] = 1;
+ 			if(i_n[1]<0) i_n[1] = 0;
+
+ 			alphaPID = p_n + i_n[1];
+
+ 			if(alphaPID>1) alphaPID = 1;
+ 			if(alphaPID<0) alphaPID = 0;
+
+
+ 			i_n[0] = i_n[1];
+ 			e_n[0] = e_n[1];
+
+
+ 			uint8_t MSG[CMD_BUFFER_SIZE] = {'\0'};
+ 			sprintf((char *)MSG, "%d", (int)(alphaPID*100));
+
+ 			SetAlpha(MSG);
+
+ 			it_tim1 = 0;
  		}
 
  		if(it_tim3)
  		{
 
- 			//GetCurrent();
 			ReadEncodeur();
 			ReadSpeed();
 
@@ -281,6 +315,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if (htim->Instance == TIM4)
 	{
 		it_tim4 = 1;
+	}
+	if (htim->Instance == TIM1)
+	{
+		it_tim1 = 0;
 	}
 	/* USER CODE END Callback 1 */
 }
