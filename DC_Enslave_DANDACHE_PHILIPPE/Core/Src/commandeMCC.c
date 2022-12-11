@@ -5,8 +5,7 @@
 extern uint32_t adcBuffer[1];
 extern int angle;
 extern int speed;
-extern int alpha;
-extern int overCurrent;
+
 
 void Swing()
 {
@@ -35,12 +34,11 @@ void Swing()
 
 void SetAlpha(char * argv)
 {
-	if(!overCurrent) alpha = atoi(argv);
+	int alpha = atoi(argv);
 
-	int alpha2 = atoi(argv);
-	if (alpha2>=0 && alpha2<=100)
+	if (alpha>=0 && alpha<=100)
 	{
-		int CCR_value = alpha2*ARR_MAX_VALUE/100;
+		int CCR_value = alpha*ARR_MAX_VALUE/100;
 		TIM1->CCR1 = CCR_value;
 		TIM1->CCR2 = ARR_MAX_VALUE - 1 - CCR_value;
 	}

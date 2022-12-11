@@ -58,12 +58,10 @@
 int it_button = 0;
 int adcCbck = 0;
 int it_tim3 = 0;
-int it_tim4 = 0;
+int it_tim1 = 0;
 int speed = 0;
 int angle = 0;
 int enPrint = 0;
-int alpha = 50;
-int overCurrent = 0;
 
 extern uint8_t uartRxReceived;
 extern uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
@@ -177,20 +175,22 @@ int main(void)
  			adcCbck = 0;
  		}
 
- 		if(it_tim4)
+ 		if(it_tim1)
  		{
- 			if ((GetCurrent()>CURRENT_MAX_VALUE) & (!overCurrent))
- 			{
- 				TIM1->CCR1 = ARR_MAX_VALUE/2;	//LE PROBLEME EST ICI
- 				TIM1->CCR2 = ARR_MAX_VALUE/2;	//DEMANDER DE REVENIR A 0 DEMANDE TROP DE COURANT (FREIN), IL FAUT LAISSER EN ROUE LIBRE
- 				overCurrent = 1;
- 			}
- 			else if ((GetCurrent()<CURRENT_MAX_VALUE) & (overCurrent))
- 			{
- 				overCurrent = 0;
- 			}
+ 			//include PID Current with own SetAlpha
 
- 			it_tim4 = 0;
+ 			//calcul alphaP et alphaI (set P à 1 ou 2 et I à 0 au depart)
+ 			//test alphaI entre 0 et 1
+
+ 			//out = alphaP + alphaI
+ 			//test out entre 0 et 1
+
+ 			//setAlphav2(out)
+ 			//attntion valeur initial de alphai à 0.5 !!! sinon moteur commande max AR
+
+ 			//set rapport tachimetrique vitesse moteur en rad/s
+ 			//verif sens du courant
+ 			//verif PID courant avec consigne de courant puis passer à la vitesse.
  		}
 
  		if(it_tim3)
@@ -278,9 +278,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	{
 		it_tim3 = 1;
 	}
-	if (htim->Instance == TIM4)
+	if (htim->Instance == TIM1)
 	{
-		it_tim4 = 1;
+		it_tim1 = 1;
 	}
 	/* USER CODE END Callback 1 */
 }
