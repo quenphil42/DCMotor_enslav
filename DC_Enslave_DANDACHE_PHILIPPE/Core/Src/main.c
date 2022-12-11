@@ -17,6 +17,7 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
+#include <PI.h>
 #include "main.h"
 #include "adc.h"
 #include "dma.h"
@@ -33,7 +34,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "commandeMCC.h"
-#include "PID.h"
 
 
 /* USER CODE END Includes */
@@ -45,8 +45,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define Kp 1.0	//5.64616
-#define Ki 0.00	//29.09067
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -65,11 +64,9 @@ int it_tim3 = 0;
 int it_tim4 = 0;
 int speed = 0;
 int angle = 0;
-float e_n[2] = {0,0};
-float i_n[2] = {0.5,0.5};
 
-float alphaPID = 0.5;
-float i_consigne = 0;
+PIController alphaPI;
+float i_consigne = 0.0;
 
 extern uint8_t uartRxReceived;
 extern uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
@@ -155,18 +152,31 @@ int main(void)
 
   HAL_TIM_Base_Start_IT(&htim4);
 
-  //PID
-  /*PIDController pidCurrent = { 	PID_KP, PID_KI, PID_KD,
-                        		PID_TAU,
-								PID_LIM_MIN, PID_LIM_MAX,
-								PID_LIM_MIN_INT, PID_LIM_MAX_INT,
-								SAMPLE_TIME_S
-  	  	  	  	  	  	  	  };*/
+  //Init asserv courant
+  PIController_Init(&alphaPI);
 
-  //PIDController_Init(&pidCurrent);
+  alphaPI.Kp = KP_ALPHA;
+  alphaPI.Ki = KI_ALPHA;
+
+  alphaPI.T = TIM1_PERIOD;
+
+  alphaPI.integrator = 0.5;
+
+  alphaPI.limMax_integrator = ALPHA_OUT_MAX_VALUE;
+  alphaPI.limMin_integrator = ALPHA_OUT_MIN_VALUE;
+
+  alphaPI.limMax_output = ALPHA_OUT_MAX_VALUE;
+  alphaPI.limMin_output = ALPHA_OUT_MIN_VALUE;
+
+  //Init asserv vitesse
+
+  /*
+   *
+   * 	will be done soon
+   *
+   * */
 
 
-  float p_n = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -201,29 +211,10 @@ int main(void)
 
  		if(it_tim1)
  		{
- 			i_consigne = 0.5;
- 			e_n[1] = i_consigne ;//- GetCurrent();
 
- 			p_n = Kp * e_n[1];
- 			i_n[1] = Ki * TIM4_PERIOD / 2 * (e_n[1] + e_n[0]) + i_n[0];
+ 			PIController_Update(&alphaPI, i_consigne, GetCurrent());
 
- 			if(i_n[1]>1) i_n[1] = 1;
- 			if(i_n[1]<0) i_n[1] = 0;
-
- 			alphaPID = p_n + i_n[1];
-
- 			if(alphaPID>1) alphaPID = 1;
- 			if(alphaPID<0) alphaPID = 0;
-
-
- 			i_n[0] = i_n[1];
- 			e_n[0] = e_n[1];
-
-
- 			uint8_t MSG[CMD_BUFFER_SIZE] = {'\0'};
- 			sprintf((char *)MSG, "%d", (int)(alphaPID*100));
-
- 			SetAlpha(MSG);
+ 			setPWM((int)(alphaPI.out*100));
 
  			it_tim1 = 0;
  		}

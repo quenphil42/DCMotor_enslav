@@ -78,6 +78,20 @@ void Error_Handler(void);
 /* USER CODE BEGIN Private defines */
 
 #define ARR_MAX_VALUE 1024
+#define ADC_MAX_VALUE 4096
+
+#define ALPHA_MIN 0		//consigne de commande alpha en %
+#define ALPHA_MAX 100
+
+// PI Courant
+#define KP_ALPHA 2.0	//5.64616
+#define KI_ALPHA 0.00	//29.09067
+
+#define ALPHA_OUT_MAX_VALUE 1
+#define ALPHA_OUT_MIN_VALUE 0
+
+#define CURRENT_MAX_VALUE	2
+#define TIM1_PERIOD 0.0000625
 
 /* PID Controller parameters current*/
 

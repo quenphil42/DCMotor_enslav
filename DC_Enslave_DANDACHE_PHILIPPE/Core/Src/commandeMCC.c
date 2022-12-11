@@ -1,13 +1,14 @@
 #include "commandeMCC.h"
 #include "usart.h"
 #include "shell2.h"
+#include "PI.h"
+#include "main.h"
 
 extern uint32_t adcBuffer[1];
 extern int angle;
 extern int speed;
 extern float i_consigne;
-extern float e_n[2];
-extern float i_n[2];
+extern PIController alphaPI;
 
 void Swing()
 {
@@ -38,11 +39,9 @@ void SetAlpha(char * argv)
 {
 	int alpha = atoi(argv);
 
-	if (alpha>=0 && alpha<=100)
+	if (alpha>=ALPHA_MIN && alpha<=ALPHA_MAX)
 	{
-		int CCR_value = alpha*ARR_MAX_VALUE/100;
-		TIM1->CCR1 = CCR_value;
-		TIM1->CCR2 = ARR_MAX_VALUE - 1 - CCR_value;
+		setPWM(alpha);
 	}
 	else
 	{
@@ -52,26 +51,35 @@ void SetAlpha(char * argv)
 
 }
 
+void setPWM(int alpha)
+{
+	int CCR_value = alpha*ARR_MAX_VALUE/ALPHA_MAX;
+	TIM1->CCR1 = CCR_value;
+	TIM1->CCR2 = ARR_MAX_VALUE - 1 - CCR_value;
+}
+
 void SetCurrent(char * argv)
 {
-	i_consigne = atoi(argv);
+	i_consigne = (float)strtod(argv,NULL); //converti un char* 2 float
 }
 
 
 void Init_Onduleur()
 {
+
 	TIM1->CCR1 = ARR_MAX_VALUE/2;
 	TIM1->CCR2 = ARR_MAX_VALUE - 1 - ARR_MAX_VALUE/2;
 	HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin,SET);
 	HAL_Delay(1);
 	HAL_GPIO_WritePin(ISO_RESET_GPIO_Port, ISO_RESET_Pin,RESET);
-	e_n[0] = 0;
-	i_n[0] = 0.5;
+
+	alphaPI.prevError = 0.0;		//reset les valeurs initiales afin de ne pas integrer d'erreur avant l'init et provoquer un overcurrent
+	alphaPI.integrator = 0.5;
 }
 
 float GetCurrent()
 {
-	return -(3137-(float)(adcBuffer[0]))*3.3*12/4096;
+	return ((float)(adcBuffer[0])-3137) * 3.3 * 12 / ADC_MAX_VALUE;
 }
 
 void ReadEncodeur()
