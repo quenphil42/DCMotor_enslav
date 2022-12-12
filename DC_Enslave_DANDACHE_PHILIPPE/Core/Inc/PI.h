@@ -38,6 +38,7 @@ typedef struct {
 
 void PIController_Init(PIController *pi);
 float PIController_Update(PIController *pi, float consigne, float measurement);
+float PIPrint_Out(PIController *pi);
 
 
 #endif /* INC_PI_H_ */

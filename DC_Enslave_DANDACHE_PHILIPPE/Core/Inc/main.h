@@ -84,21 +84,21 @@ void Error_Handler(void);
 #define ALPHA_MAX 100
 
 // PI Courant
-#define KP_ALPHA 2.0	//5.64616
-#define KI_ALPHA 0.00	//29.09067
+#define KP_ALPHA 0.10	//5.64616
+#define KI_ALPHA 0.8	//29.09067
 
-#define ALPHA_OUT_MAX_VALUE 1
-#define ALPHA_OUT_MIN_VALUE 0
+#define ALPHA_OUT_MAX_VALUE 0.99
+#define ALPHA_OUT_MIN_VALUE 0.01
 
 #define TIM1_PERIOD 0.0000625
 
 // PI Vitesse
-#define KP_CURRENT 1.0
-#define KI_CURRENT 0.00
+#define KP_CURRENT 0.5
+#define KI_CURRENT 0.1
 
-#define CURRENT_OUT_MAX_VALUE	2
+#define CURRENT_OUT_MAX_VALUE	2.0
 
-#define TIM4_PERIOD 0.00625
+#define TIM4_PERIOD 0.064
 
 
 

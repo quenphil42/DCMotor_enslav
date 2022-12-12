@@ -42,3 +42,7 @@ float PIController_Update(PIController *pi, float consigne, float measurement)
 
 }
 
+float PIPrint_Out(PIController *pi)
+{
+	return pi->out;
+}

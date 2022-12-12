@@ -125,6 +125,7 @@ int main(void)
   MX_TIM2_Init();
   MX_TIM3_Init();
   MX_TIM4_Init();
+  MX_TIM6_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 - Shell*/
@@ -233,7 +234,13 @@ int main(void)
 			ReadEncodeur();
 			ReadSpeed();
 
-			if(enPrint)PrintData();
+			if(enPrint)
+				{
+					PrintData();
+					uint8_t MSG[CMD_BUFFER_SIZE] = {'\0'};
+					sprintf((char *)MSG, "alphaPI = %f\n\r", alphaPI.out);
+					HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
+				}
 
 
  			it_tim3 = 0;
@@ -325,11 +332,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 	if (htim->Instance == TIM4)
 	{
-		//it_tim4 = 1;
+		it_tim4 = 1;
 	}
 	if (htim->Instance == TIM1)
 	{
-		it_tim1 = 0;
+		it_tim1 = 1;
 	}
 	/* USER CODE END Callback 1 */
 }
