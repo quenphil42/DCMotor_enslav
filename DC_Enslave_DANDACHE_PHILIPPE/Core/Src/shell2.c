@@ -59,6 +59,8 @@ const uint8_t cmdNotFound[]="Command not found\r\n";
 const uint8_t getCurrent[] = "print the current value\r\n";
 const uint8_t readEncodeur[] = "print the angle position \r\n";
 const uint8_t readSpeed[] = "print the speed \r\n";
+const uint8_t setCurrent[] = "set the MCC current setpoint\r\n";
+const uint8_t setSpeed[] = "set the MCC speed setpoint\r\n";
 
 char cmdBuffer[CMD_BUFFER_SIZE];
 extern uint8_t 	uartRxBuffer[UART_RX_BUFFER_SIZE];
@@ -195,9 +197,14 @@ void shellExec(void){
 	}
 	else if(strcmp(argv[0],"setCurrent")==0)
 		{
-			HAL_UART_Transmit(&huart2, readSpeed, sizeof(readSpeed), HAL_MAX_DELAY);
+			HAL_UART_Transmit(&huart2, setCurrent, sizeof(setCurrent), HAL_MAX_DELAY);
 			SetCurrent(argv[1]);
 		}
+	else if(strcmp(argv[0],"setSpeed")==0)
+			{
+				HAL_UART_Transmit(&huart2, setSpeed, sizeof(setSpeed), HAL_MAX_DELAY);
+				SetSpeed(argv[1]);
+			}
 	else{
 		shellCmdNotFound();
 	}

@@ -8,7 +8,9 @@ extern uint32_t adcBuffer[1];
 extern int angle;
 extern int speed;
 extern float i_consigne;
+extern float v_consigne;
 extern PIController alphaPI;
+extern PIController currentPI;
 
 void Swing()
 {
@@ -63,6 +65,11 @@ void SetCurrent(char * argv)
 	i_consigne = (float)strtod(argv,NULL); //converti un char* 2 float
 }
 
+void SetSpeed(char * argv)
+{
+	v_consigne = (float)strtod(argv,NULL); //converti un char* 2 float
+}
+
 
 void Init_Onduleur()
 {
@@ -75,11 +82,18 @@ void Init_Onduleur()
 
 	alphaPI.prevError = 0.0;		//reset les valeurs initiales afin de ne pas integrer d'erreur avant l'init et provoquer un overcurrent
 	alphaPI.integrator = 0.5;
+	currentPI.prevError = 0.0;
+	currentPI.integrator = 0.0;
 }
 
 float GetCurrent()
 {
 	return ((float)(adcBuffer[0])-3137) * 3.3 * 12 / ADC_MAX_VALUE;
+}
+
+float GetSpeed()
+{
+	return (float)(TICK2SPEED * speed);
 }
 
 void ReadEncodeur()
@@ -101,7 +115,7 @@ void PrintData()
 	sprintf((char *)MSG, "Encoder Ticks = %d\n\r", angle);
 	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
 
-	sprintf((char *)MSG, "Speed = %f tr/min\n\r", 0.0153 * speed);
+	sprintf((char *)MSG, "Speed = %f tr/min\n\r", TICK2SPEED * speed);
 	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
 
 	sprintf( (char *)MSG, "current = %1.3f \r\n",(3137-(float)(adcBuffer[0]))*3.3*12/4096);

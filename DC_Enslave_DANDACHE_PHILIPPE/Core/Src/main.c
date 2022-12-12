@@ -17,7 +17,6 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include <PI.h>
 #include "main.h"
 #include "adc.h"
 #include "dma.h"
@@ -28,7 +27,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-//#include "shell.h"
+#include "PI.h"
 #include "shell2.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,6 +66,9 @@ int angle = 0;
 
 PIController alphaPI;
 float i_consigne = 0.0;
+
+PIController currentPI;
+float v_consigne = 0.0;
 
 extern uint8_t uartRxReceived;
 extern uint8_t uartRxBuffer[UART_RX_BUFFER_SIZE];
@@ -170,12 +172,18 @@ int main(void)
 
   //Init asserv vitesse
 
-  /*
-   *
-   * 	will be done soon
-   *
-   * */
+  PIController_Init(&currentPI);
 
+  currentPI.Kp = KP_CURRENT;
+  currentPI.Ki = KI_CURRENT;
+
+  currentPI.T = TIM4_PERIOD;
+
+  currentPI.limMax_integrator = CURRENT_OUT_MAX_VALUE;
+  currentPI.limMin_integrator = -CURRENT_OUT_MAX_VALUE;
+
+  currentPI.limMax_output = CURRENT_OUT_MAX_VALUE;
+  currentPI.limMin_output = -CURRENT_OUT_MAX_VALUE;
 
   /* USER CODE END 2 */
 
@@ -230,7 +238,19 @@ int main(void)
 
  			it_tim3 = 0;
  		}
+ 		if(it_tim4)
+ 		{
 
+ 			ReadEncodeur();
+ 			ReadSpeed();
+
+ 			PIController_Update(&currentPI, v_consigne, GetSpeed());
+
+ 			i_consigne = currentPI.out;
+
+ 			it_tim4 = 0;
+
+ 		}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -305,7 +325,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	}
 	if (htim->Instance == TIM4)
 	{
-		it_tim4 = 1;
+		//it_tim4 = 1;
 	}
 	if (htim->Instance == TIM1)
 	{

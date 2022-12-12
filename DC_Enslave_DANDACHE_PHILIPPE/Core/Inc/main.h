@@ -90,10 +90,16 @@ void Error_Handler(void);
 #define ALPHA_OUT_MAX_VALUE 1
 #define ALPHA_OUT_MIN_VALUE 0
 
-#define CURRENT_MAX_VALUE	2
 #define TIM1_PERIOD 0.0000625
 
-/* PID Controller parameters current*/
+// PI Vitesse
+#define KP_CURRENT 1.0
+#define KI_CURRENT 0.00
+
+#define CURRENT_OUT_MAX_VALUE	2
+
+#define TIM4_PERIOD 0.00625
+
 
 
 /* USER CODE END Private defines */
