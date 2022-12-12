@@ -34,7 +34,6 @@
 #include <string.h>
 #include "commandeMCC.h"
 
-
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -251,7 +250,7 @@ int main(void)
  			ReadEncodeur();
  			ReadSpeed();
 
- 			PIController_Update(&currentPI, v_consigne, GetSpeed());
+ 			PIController_Update(&currentPI, v_consigne, GetSpeed(TICK2SPEED_TIM4));
 
  			i_consigne = currentPI.out;
 

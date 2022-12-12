@@ -84,8 +84,8 @@ void Error_Handler(void);
 #define ALPHA_MAX 100
 
 // PI Courant
-#define KP_ALPHA 0.10	//5.64616
-#define KI_ALPHA 0.8	//29.09067
+#define KP_ALPHA 0.10	//0.0039
+#define KI_ALPHA 0.8	//1.74
 
 #define ALPHA_OUT_MAX_VALUE 0.99
 #define ALPHA_OUT_MIN_VALUE 0.01
@@ -93,14 +93,15 @@ void Error_Handler(void);
 #define TIM1_PERIOD 0.0000625
 
 // PI Vitesse
-#define KP_CURRENT 0.5
-#define KI_CURRENT 0.1
+#define KP_CURRENT 0.1		//empirique0.1	//matlab0.72
+#define KI_CURRENT 2.0	//empirique0.1	//matlab15.94
 
 #define CURRENT_OUT_MAX_VALUE	2.0
 
-#define TIM4_PERIOD 0.064
+#define TIM4_PERIOD 0.0064
 
-
+#define TICK2SPEED_TIM3 0.0146 // 60/4096/TimerDelay    avec TimerDelay(en sec)
+#define TICK2SPEED_TIM4 (60.0/4096.0)/TIM4_PERIOD
 
 /* USER CODE END Private defines */
 

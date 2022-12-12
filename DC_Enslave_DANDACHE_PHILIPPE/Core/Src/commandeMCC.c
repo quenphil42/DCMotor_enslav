@@ -36,7 +36,14 @@ void Swing()
 		}
 	}
 }
-
+/**
+ *
+ * @brief
+ *
+ * @param argv
+ *
+ * @retval None
+ */
 void SetAlpha(char * argv)
 {
 	int alpha = atoi(argv);
@@ -91,9 +98,9 @@ float GetCurrent()
 	return -((float)(adcBuffer[0])-3137) * 3.3 * GAIN_COURANT_HACHEUR / ADC_MAX_VALUE;
 }
 
-float GetSpeed()
+float GetSpeed(int timercoef)
 {
-	return -(float)(TICK2SPEED * speed);
+	return -(float)(timercoef * speed);
 }
 
 void ReadEncodeur()
@@ -115,7 +122,7 @@ void PrintData()
 	sprintf((char *)MSG, "Encoder Ticks = %d\n\r", angle);
 	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
 
-	sprintf((char *)MSG, "Speed = %f tr/min\n\r", -TICK2SPEED * speed);
+	sprintf((char *)MSG, "Speed = %f tr/min\n\r", -TICK2SPEED_TIM3 * speed);
 	HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
 
 	sprintf( (char *)MSG, "current = %1.3f \r\n",-((float)(adcBuffer[0])-3137) * 3.3 * GAIN_COURANT_HACHEUR / ADC_MAX_VALUE);
