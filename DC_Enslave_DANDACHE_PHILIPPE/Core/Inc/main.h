@@ -33,6 +33,7 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
 #include "stdlib.h"
+#include "commandeMCC.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -75,33 +76,38 @@ void Error_Handler(void);
 #define ENC_VOIEA_GPIO_Port GPIOA
 #define ENC_VOIEB_Pin GPIO_PIN_3
 #define ENC_VOIEB_GPIO_Port GPIOB
+
 /* USER CODE BEGIN Private defines */
 
 #define ARR_MAX_VALUE 1024
 #define ADC_MAX_VALUE 4096
 
-#define ALPHA_MIN 0		//consigne de commande alpha en %
+#define ALPHA_MIN 0		//consigne de commande alpha entre 0 et 100
 #define ALPHA_MAX 100
 
 // PI Courant
-#define KP_ALPHA 0.10	//0.0039
-#define KI_ALPHA 0.8	//1.74
+#define KP_ALPHA 0.1	//0.10
+#define KI_ALPHA 0.8	//0.8
 
 #define ALPHA_OUT_MAX_VALUE 0.99
 #define ALPHA_OUT_MIN_VALUE 0.01
-
+#define ALPHA_MEM_I 0.5
+#define ALPHA_MEM_P 0.0
 #define TIM1_PERIOD 0.0000625
 
 // PI Vitesse
-#define KP_CURRENT 0.1		//empirique0.1	//matlab0.72
-#define KI_CURRENT 2.0	//empirique0.1	//matlab15.94
+#define KP_CURRENT 0.1		//matlab0.72
+#define KI_CURRENT 2.0		//matlab15.94
 
 #define CURRENT_OUT_MAX_VALUE	2.0
+#define CURRENT_MEM_I 0.0
+#define CURRENT_MEM_P 0.0
 
+#define TIM3_PERIOD 1.0
 #define TIM4_PERIOD 0.0064
 
-#define TICK2SPEED_TIM3 0.0146 // 60/4096/TimerDelay    avec TimerDelay(en sec)
-#define TICK2SPEED_TIM4 (60.0/4096.0)/TIM4_PERIOD
+#define TICK2SPEED_TIM4 0.000000001472 // 60.0 / encodeurDefinition /TIM4_PERIOD // 60/4096/TimerDelay    avec TimerDelay(en sec)
+#define TICK2SPEED_TIM3 0.00000023 //60.0 / encodeurDefinition / TIM3_PERIOD //(60.0/4096.0)*TIM3_PERIOD
 
 /* USER CODE END Private defines */
 

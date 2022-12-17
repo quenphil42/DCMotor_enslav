@@ -1,0 +1,285 @@
+\hypertarget{commande_m_c_c_8c}{}\doxysection{commande\+MCC.\+c File Reference}
+\label{commande_m_c_c_8c}\index{commandeMCC.c@{commandeMCC.c}}
+
+
+Ce fichier contient le code en rapport avec l\textquotesingle{}utilisation de l\textquotesingle{}onduleur et la commande de la MCC.  
+
+
+{\ttfamily \#include \char`\"{}commande\+MCC.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}usart.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}shell2.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}PI.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}main.\+h\char`\"{}}\newline
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{commande_m_c_c_8c_aec60e26ab569b469520401044305b424}{Swing}} ()
+\begin{DoxyCompactList}\small\item\em Fonction bloquante qui permet de modifier la PWM du moteur de manière sinusoidale sur trois période. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{commande_m_c_c_8c_a1d5b801c90834c97840e39e838da9746}{Set\+Alpha}} (char $\ast$argv)
+\begin{DoxyCompactList}\small\item\em Fonction qui permet de fixer la valeur du rapport alpha de la PWM depuis le shell. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{commande_m_c_c_8c_a3df10efb128e331b1a0d85ea3073eaec}{set\+PWM}} (int alpha)
+\begin{DoxyCompactList}\small\item\em Fonction qui permet de fixer la valeur du rapport alpha de la PWM. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{commande_m_c_c_8c_ae884c65ef85ca3c46a0e63a88e622289}{Set\+Current}} (char $\ast$argv)
+\begin{DoxyCompactList}\small\item\em Fonction qui permet de fixer la consigne de courant (en A) depuis le shell pour eprouver l\textquotesingle{}asservissement en courant. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{commande_m_c_c_8c_add78c7e7bfc3793d9308ef1d2729d6a4}{Set\+Speed}} (char $\ast$argv)
+\begin{DoxyCompactList}\small\item\em Fonction qui permet de fixer la consigne de vitesse (en tr/min) depuis le shell pour eprouver l\textquotesingle{}asservissement en vitesse. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{commande_m_c_c_8c_a8d9ca65a81a672bd5e5d5dcdfe1d4824}{Init\+\_\+\+Onduleur}} ()
+\begin{DoxyCompactList}\small\item\em Fonction bloquante qui permet d\textquotesingle{}initialiser l\textquotesingle{}onduleur et reinitialiser les mémoires des asservissements de vitesse et courant. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{commande_m_c_c_8c_ae3511a4a6dabca483719894b4612b56f}{Get\+Current}} ()
+\begin{DoxyCompactList}\small\item\em Fonction qui permet d\textquotesingle{}obtenir la valeur du courant (en A) au sein de la MCC depuis le Buffer \char`\"{}adc\+Buffer\char`\"{} où le DMA stock periodiquement la valeur lue par l\textquotesingle{}ADC. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{commande_m_c_c_8c_aef14193d14d150c776e4b16f81e26f6b}{Get\+Speed}} (int timercoef)
+\begin{DoxyCompactList}\small\item\em Foction qui permet d\textquotesingle{}obtenir la valeur de la vitesse (en tr/min) de la MCC en tenant compte de la periode d\textquotesingle{}echantillonage. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{commande_m_c_c_8c_acce79719c3a7f5acb00827a51fed06dc}{Read\+Encodeur}} ()
+\begin{DoxyCompactList}\small\item\em Fonction qui met à jour la variable global \char`\"{}angle\char`\"{} en lui associant la valeur du compteur du Timer 2. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{commande_m_c_c_8c_a32a314152268bfe05f4eeffe6e4e9b5d}{Read\+Speed}} ()
+\begin{DoxyCompactList}\small\item\em Fonction qui met à jour la variable global \char`\"{}speed\char`\"{} en lui associant la variation d\textquotesingle{}increment issue du codeur incremental depuis le dernier appel de la fonction. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{commande_m_c_c_8c_a0ba0869bf498e899d0e19da46eef503d}{Print\+Data}} ()
+\begin{DoxyCompactList}\small\item\em Fonction qui imprime sur le shell la valeur du CNT de Tim2, de la vitesse en tr/min et du courant mesuré en A. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{commande_m_c_c_8c_ac447f9160da08991cab17ea599968357}\label{commande_m_c_c_8c_ac447f9160da08991cab17ea599968357}} 
+uint32\+\_\+t {\bfseries adc\+Buffer} \mbox{[}1\mbox{]}
+\item 
+\mbox{\Hypertarget{commande_m_c_c_8c_a63177970cacb40efba67ce501ea89210}\label{commande_m_c_c_8c_a63177970cacb40efba67ce501ea89210}} 
+int {\bfseries angle}
+\item 
+\mbox{\Hypertarget{commande_m_c_c_8c_a218b4f7c6cc2681a99c23a3b089d68b1}\label{commande_m_c_c_8c_a218b4f7c6cc2681a99c23a3b089d68b1}} 
+int {\bfseries speed}
+\item 
+\mbox{\Hypertarget{commande_m_c_c_8c_afb17f08bb43834e0fe7e09565d73d657}\label{commande_m_c_c_8c_afb17f08bb43834e0fe7e09565d73d657}} 
+float {\bfseries i\+\_\+consigne}
+\item 
+\mbox{\Hypertarget{commande_m_c_c_8c_a3911994defe7ecb2add292a01cd19238}\label{commande_m_c_c_8c_a3911994defe7ecb2add292a01cd19238}} 
+float {\bfseries v\+\_\+consigne}
+\item 
+\mbox{\Hypertarget{commande_m_c_c_8c_a91aa37e56c8f15ea5655f99408159658}\label{commande_m_c_c_8c_a91aa37e56c8f15ea5655f99408159658}} 
+PIController {\bfseries alpha\+PI}
+\item 
+\mbox{\Hypertarget{commande_m_c_c_8c_acfa15d28683a7b0ec83efec9f8becb29}\label{commande_m_c_c_8c_acfa15d28683a7b0ec83efec9f8becb29}} 
+PIController {\bfseries current\+PI}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Ce fichier contient le code en rapport avec l\textquotesingle{}utilisation de l\textquotesingle{}onduleur et la commande de la MCC. 
+
+Created on\+: Dec 8, 2022 Author\+: quent 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{commande_m_c_c_8c_ae3511a4a6dabca483719894b4612b56f}\label{commande_m_c_c_8c_ae3511a4a6dabca483719894b4612b56f}} 
+\index{commandeMCC.c@{commandeMCC.c}!GetCurrent@{GetCurrent}}
+\index{GetCurrent@{GetCurrent}!commandeMCC.c@{commandeMCC.c}}
+\doxysubsubsection{\texorpdfstring{GetCurrent()}{GetCurrent()}}
+{\footnotesize\ttfamily float Get\+Current (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Fonction qui permet d\textquotesingle{}obtenir la valeur du courant (en A) au sein de la MCC depuis le Buffer \char`\"{}adc\+Buffer\char`\"{} où le DMA stock periodiquement la valeur lue par l\textquotesingle{}ADC. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em None} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+courant (en A) 
+\end{DoxyReturn}
+\mbox{\Hypertarget{commande_m_c_c_8c_aef14193d14d150c776e4b16f81e26f6b}\label{commande_m_c_c_8c_aef14193d14d150c776e4b16f81e26f6b}} 
+\index{commandeMCC.c@{commandeMCC.c}!GetSpeed@{GetSpeed}}
+\index{GetSpeed@{GetSpeed}!commandeMCC.c@{commandeMCC.c}}
+\doxysubsubsection{\texorpdfstring{GetSpeed()}{GetSpeed()}}
+{\footnotesize\ttfamily float Get\+Speed (\begin{DoxyParamCaption}\item[{int}]{timercoef }\end{DoxyParamCaption})}
+
+
+
+Foction qui permet d\textquotesingle{}obtenir la valeur de la vitesse (en tr/min) de la MCC en tenant compte de la periode d\textquotesingle{}echantillonage. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em timercoef} & (ratio entre la variation de tick et la periode d\textquotesingle{}echantillonage)\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+vitesse en tr/min 
+\end{DoxyReturn}
+\mbox{\Hypertarget{commande_m_c_c_8c_a8d9ca65a81a672bd5e5d5dcdfe1d4824}\label{commande_m_c_c_8c_a8d9ca65a81a672bd5e5d5dcdfe1d4824}} 
+\index{commandeMCC.c@{commandeMCC.c}!Init\_Onduleur@{Init\_Onduleur}}
+\index{Init\_Onduleur@{Init\_Onduleur}!commandeMCC.c@{commandeMCC.c}}
+\doxysubsubsection{\texorpdfstring{Init\_Onduleur()}{Init\_Onduleur()}}
+{\footnotesize\ttfamily void Init\+\_\+\+Onduleur (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Fonction bloquante qui permet d\textquotesingle{}initialiser l\textquotesingle{}onduleur et reinitialiser les mémoires des asservissements de vitesse et courant. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em None} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{commande_m_c_c_8c_a0ba0869bf498e899d0e19da46eef503d}\label{commande_m_c_c_8c_a0ba0869bf498e899d0e19da46eef503d}} 
+\index{commandeMCC.c@{commandeMCC.c}!PrintData@{PrintData}}
+\index{PrintData@{PrintData}!commandeMCC.c@{commandeMCC.c}}
+\doxysubsubsection{\texorpdfstring{PrintData()}{PrintData()}}
+{\footnotesize\ttfamily void Print\+Data (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Fonction qui imprime sur le shell la valeur du CNT de Tim2, de la vitesse en tr/min et du courant mesuré en A. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em None} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{commande_m_c_c_8c_acce79719c3a7f5acb00827a51fed06dc}\label{commande_m_c_c_8c_acce79719c3a7f5acb00827a51fed06dc}} 
+\index{commandeMCC.c@{commandeMCC.c}!ReadEncodeur@{ReadEncodeur}}
+\index{ReadEncodeur@{ReadEncodeur}!commandeMCC.c@{commandeMCC.c}}
+\doxysubsubsection{\texorpdfstring{ReadEncodeur()}{ReadEncodeur()}}
+{\footnotesize\ttfamily void Read\+Encodeur (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Fonction qui met à jour la variable global \char`\"{}angle\char`\"{} en lui associant la valeur du compteur du Timer 2. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em None} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{commande_m_c_c_8c_a32a314152268bfe05f4eeffe6e4e9b5d}\label{commande_m_c_c_8c_a32a314152268bfe05f4eeffe6e4e9b5d}} 
+\index{commandeMCC.c@{commandeMCC.c}!ReadSpeed@{ReadSpeed}}
+\index{ReadSpeed@{ReadSpeed}!commandeMCC.c@{commandeMCC.c}}
+\doxysubsubsection{\texorpdfstring{ReadSpeed()}{ReadSpeed()}}
+{\footnotesize\ttfamily void Read\+Speed (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Fonction qui met à jour la variable global \char`\"{}speed\char`\"{} en lui associant la variation d\textquotesingle{}increment issue du codeur incremental depuis le dernier appel de la fonction. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em None} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{commande_m_c_c_8c_a1d5b801c90834c97840e39e838da9746}\label{commande_m_c_c_8c_a1d5b801c90834c97840e39e838da9746}} 
+\index{commandeMCC.c@{commandeMCC.c}!SetAlpha@{SetAlpha}}
+\index{SetAlpha@{SetAlpha}!commandeMCC.c@{commandeMCC.c}}
+\doxysubsubsection{\texorpdfstring{SetAlpha()}{SetAlpha()}}
+{\footnotesize\ttfamily void Set\+Alpha (\begin{DoxyParamCaption}\item[{char $\ast$}]{argv }\end{DoxyParamCaption})}
+
+
+
+Fonction qui permet de fixer la valeur du rapport alpha de la PWM depuis le shell. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em argv} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{commande_m_c_c_8c_ae884c65ef85ca3c46a0e63a88e622289}\label{commande_m_c_c_8c_ae884c65ef85ca3c46a0e63a88e622289}} 
+\index{commandeMCC.c@{commandeMCC.c}!SetCurrent@{SetCurrent}}
+\index{SetCurrent@{SetCurrent}!commandeMCC.c@{commandeMCC.c}}
+\doxysubsubsection{\texorpdfstring{SetCurrent()}{SetCurrent()}}
+{\footnotesize\ttfamily void Set\+Current (\begin{DoxyParamCaption}\item[{char $\ast$}]{argv }\end{DoxyParamCaption})}
+
+
+
+Fonction qui permet de fixer la consigne de courant (en A) depuis le shell pour eprouver l\textquotesingle{}asservissement en courant. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em argv} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{commande_m_c_c_8c_a3df10efb128e331b1a0d85ea3073eaec}\label{commande_m_c_c_8c_a3df10efb128e331b1a0d85ea3073eaec}} 
+\index{commandeMCC.c@{commandeMCC.c}!setPWM@{setPWM}}
+\index{setPWM@{setPWM}!commandeMCC.c@{commandeMCC.c}}
+\doxysubsubsection{\texorpdfstring{setPWM()}{setPWM()}}
+{\footnotesize\ttfamily void set\+PWM (\begin{DoxyParamCaption}\item[{int}]{alpha }\end{DoxyParamCaption})}
+
+
+
+Fonction qui permet de fixer la valeur du rapport alpha de la PWM. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em alpha} & (entier entre 0 et 100)\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{commande_m_c_c_8c_add78c7e7bfc3793d9308ef1d2729d6a4}\label{commande_m_c_c_8c_add78c7e7bfc3793d9308ef1d2729d6a4}} 
+\index{commandeMCC.c@{commandeMCC.c}!SetSpeed@{SetSpeed}}
+\index{SetSpeed@{SetSpeed}!commandeMCC.c@{commandeMCC.c}}
+\doxysubsubsection{\texorpdfstring{SetSpeed()}{SetSpeed()}}
+{\footnotesize\ttfamily void Set\+Speed (\begin{DoxyParamCaption}\item[{char $\ast$}]{argv }\end{DoxyParamCaption})}
+
+
+
+Fonction qui permet de fixer la consigne de vitesse (en tr/min) depuis le shell pour eprouver l\textquotesingle{}asservissement en vitesse. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em argv} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{commande_m_c_c_8c_aec60e26ab569b469520401044305b424}\label{commande_m_c_c_8c_aec60e26ab569b469520401044305b424}} 
+\index{commandeMCC.c@{commandeMCC.c}!Swing@{Swing}}
+\index{Swing@{Swing}!commandeMCC.c@{commandeMCC.c}}
+\doxysubsubsection{\texorpdfstring{Swing()}{Swing()}}
+{\footnotesize\ttfamily void Swing (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Fonction bloquante qui permet de modifier la PWM du moteur de manière sinusoidale sur trois période. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em None} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}

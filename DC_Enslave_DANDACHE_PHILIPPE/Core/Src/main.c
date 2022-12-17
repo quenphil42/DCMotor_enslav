@@ -129,32 +129,32 @@ int main(void)
 
   /* USER CODE END 2 - Shell*/
 
-  //Commande PWM
+  //Commande PWM Init
   HAL_TIM_Base_Start_IT(&htim1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_1);
   HAL_TIMEx_PWMN_Start(&htim1, TIM_CHANNEL_2);
 
-  //UART
+  //UART Init
   HAL_UART_Receive_IT(&huart2, uartRxBuffer, UART_RX_BUFFER_SIZE);
 
-  //SHELL
+  //SHELL Init
   HAL_Delay(1);
   shellInit();
 
-  //ADC
+  //ADC Init
   HAL_ADCEx_Calibration_Start (&hadc1, ADC_SINGLE_ENDED);
   HAL_ADC_Start_DMA(&hadc1, adcBuffer, 1);
 
-  //TIMER
+  //TIMERs Init
   HAL_TIM_Encoder_Start(&htim2, TIM_CHANNEL_ALL);
 
   HAL_TIM_Base_Start_IT(&htim3);
 
   HAL_TIM_Base_Start_IT(&htim4);
 
-  //Init asserv courant
+  //Asserv courant Init
   PIController_Init(&alphaPI);
 
   alphaPI.Kp = KP_ALPHA;
@@ -162,7 +162,7 @@ int main(void)
 
   alphaPI.T = TIM1_PERIOD;
 
-  alphaPI.integrator = 0.5;
+  alphaPI.integrator = ALPHA_MEM_I;
 
   alphaPI.limMax_integrator = ALPHA_OUT_MAX_VALUE;
   alphaPI.limMin_integrator = ALPHA_OUT_MIN_VALUE;
@@ -170,7 +170,7 @@ int main(void)
   alphaPI.limMax_output = ALPHA_OUT_MAX_VALUE;
   alphaPI.limMin_output = ALPHA_OUT_MIN_VALUE;
 
-  //Init asserv vitesse
+  //Asserv vitesse Init
 
   PIController_Init(&currentPI);
 
@@ -192,8 +192,10 @@ int main(void)
   while (1)
   {
 // SuperLoop inside the while(1), only flag changed from interrupt could launch functions
- 		if(uartRxReceived){
-  			if(shellGetChar()){
+ 		if(uartRxReceived)
+ 		{
+  			if(shellGetChar())
+  			{
   				shellExec();
   				shellPrompt();
   			}
@@ -211,9 +213,9 @@ int main(void)
 
  			it_button = 0;
  		}
+
  		if(adcCbck == 1)
  		{
-
  			adcCbck = 0;
  		}
 
@@ -230,20 +232,27 @@ int main(void)
  		if(it_tim3)
  		{
 
-			ReadEncodeur();
-			ReadSpeed();
+
 
 			if(enPrint)
 				{
+					/*ReadEncodeur();
+					ReadSpeed();
 					PrintData();
 					uint8_t MSG[CMD_BUFFER_SIZE] = {'\0'};
 					sprintf((char *)MSG, "alphaPI = %f\n\r", alphaPI.out);
+					HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);*/
+
+					uint8_t MSG[CMD_BUFFER_SIZE] = {'\0'};
+
+					sprintf((char *)MSG, "Speed = %f tick/periode\n\r", GetSpeed(TICK2SPEED_TIM4));
 					HAL_UART_Transmit(&huart2, MSG, sizeof(MSG), 100);
 				}
 
 
  			it_tim3 = 0;
  		}
+
  		if(it_tim4)
  		{
 
@@ -257,6 +266,7 @@ int main(void)
  			it_tim4 = 0;
 
  		}
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -311,11 +321,25 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
+/**
+ * @brief Fonction appelée à la fin de la conversion de l'ADC
+ *
+ * @param hadc
+ *
+ * @retval None
+ */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
 	adcCbck = 1;
 }
 
+/**
+ * @brief Fonction appelée lors du Callback des Timers
+ *
+ * @param htim
+ *
+ * @retval
+ */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	/* USER CODE BEGIN Callback 0 */
@@ -340,12 +364,26 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	/* USER CODE END Callback 1 */
 }
 
+/**
+ * @brief Fonction qui permet d'utiliser le printf avec l'USART2
+ *
+ * @param ch
+ *
+ * @return ch
+ */
 int __io_putchar(int ch) //COM Serial via printf
 {
 	HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1, HAL_MAX_DELAY);
 	return ch;
 }
 
+/**
+ * @brief Fonction appelée lors d'une interruption EXTI
+ *
+ * @param GPIO_Pin
+ *
+ * @retval None
+ */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)  // <----- The ISR Function We're Looking For!
 {
 	it_button = 1;

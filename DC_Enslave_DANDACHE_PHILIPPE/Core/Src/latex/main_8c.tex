@@ -1,0 +1,225 @@
+\hypertarget{main_8c}{}\doxysection{main.\+c File Reference}
+\label{main_8c}\index{main.c@{main.c}}
+
+
+\+: Main program body  
+
+
+{\ttfamily \#include \char`\"{}main.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}adc.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}dma.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}tim.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}usart.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}gpio.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}PI.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}shell2.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}commande\+MCC.\+h\char`\"{}}\newline
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{main_8c_a70af21c671abfcc773614a9a4f63d920}{System\+Clock\+\_\+\+Config}} (void)
+\begin{DoxyCompactList}\small\item\em System Clock Configuration. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{main_8c_a840291bc02cba5474a4cb46a9b9566fe}{main}} (void)
+\begin{DoxyCompactList}\small\item\em The application entry point. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_af20a88180db1113be1e89266917d148b}{HAL\+\_\+\+ADC\+\_\+\+Conv\+Cplt\+Callback}} (ADC\+\_\+\+Handle\+Type\+Def $\ast$hadc)
+\begin{DoxyCompactList}\small\item\em Fonction appelée à la fin de la conversion de l\textquotesingle{}ADC. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a8a3b0ad512a6e6c6157440b68d395eac}{HAL\+\_\+\+TIM\+\_\+\+Period\+Elapsed\+Callback}} (TIM\+\_\+\+Handle\+Type\+Def $\ast$htim)
+\begin{DoxyCompactList}\small\item\em Fonction appelée lors du Callback des Timers. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{main_8c_abc513dd972081ae765b6949a62872eb7}{\+\_\+\+\_\+io\+\_\+putchar}} (int ch)
+\begin{DoxyCompactList}\small\item\em Fonction qui permet d\textquotesingle{}utiliser le printf avec l\textquotesingle{}USART2. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a0cd91fd3a9608559c2a87a8ba6cba55f}{HAL\+\_\+\+GPIO\+\_\+\+EXTI\+\_\+\+Callback}} (uint16\+\_\+t GPIO\+\_\+\+Pin)
+\begin{DoxyCompactList}\small\item\em Fonction appelée lors d\textquotesingle{}une interruption EXTI. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{main_8c_a1730ffe1e560465665eb47d9264826f9}{Error\+\_\+\+Handler}} (void)
+\begin{DoxyCompactList}\small\item\em This function is executed in case of error occurrence. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{main_8c_a0e80fb6095c4899da99dcaa6f2ed408d}\label{main_8c_a0e80fb6095c4899da99dcaa6f2ed408d}} 
+int {\bfseries it\+\_\+button} = 0
+\item 
+\mbox{\Hypertarget{main_8c_af625d82eec09fc498588b2fa4499a579}\label{main_8c_af625d82eec09fc498588b2fa4499a579}} 
+int {\bfseries adc\+Cbck} = 0
+\item 
+\mbox{\Hypertarget{main_8c_a7b677f17bc4c2765ef4802de33751bc1}\label{main_8c_a7b677f17bc4c2765ef4802de33751bc1}} 
+int {\bfseries it\+\_\+tim1} = 0
+\item 
+\mbox{\Hypertarget{main_8c_ad0401af0f541e05ebc66b52fe5604ca3}\label{main_8c_ad0401af0f541e05ebc66b52fe5604ca3}} 
+int {\bfseries it\+\_\+tim3} = 0
+\item 
+\mbox{\Hypertarget{main_8c_ad699e1ca888eb69c61cfca97ade55dae}\label{main_8c_ad699e1ca888eb69c61cfca97ade55dae}} 
+int {\bfseries it\+\_\+tim4} = 0
+\item 
+\mbox{\Hypertarget{main_8c_a218b4f7c6cc2681a99c23a3b089d68b1}\label{main_8c_a218b4f7c6cc2681a99c23a3b089d68b1}} 
+int {\bfseries speed} = 0
+\item 
+\mbox{\Hypertarget{main_8c_a63177970cacb40efba67ce501ea89210}\label{main_8c_a63177970cacb40efba67ce501ea89210}} 
+int {\bfseries angle} = 0
+\item 
+\mbox{\Hypertarget{main_8c_a91aa37e56c8f15ea5655f99408159658}\label{main_8c_a91aa37e56c8f15ea5655f99408159658}} 
+PIController {\bfseries alpha\+PI}
+\item 
+\mbox{\Hypertarget{main_8c_afb17f08bb43834e0fe7e09565d73d657}\label{main_8c_afb17f08bb43834e0fe7e09565d73d657}} 
+float {\bfseries i\+\_\+consigne} = 0.\+0
+\item 
+\mbox{\Hypertarget{main_8c_acfa15d28683a7b0ec83efec9f8becb29}\label{main_8c_acfa15d28683a7b0ec83efec9f8becb29}} 
+PIController {\bfseries current\+PI}
+\item 
+\mbox{\Hypertarget{main_8c_a3911994defe7ecb2add292a01cd19238}\label{main_8c_a3911994defe7ecb2add292a01cd19238}} 
+float {\bfseries v\+\_\+consigne} = 0.\+0
+\item 
+\mbox{\Hypertarget{main_8c_a9f01ffb72325e6328a2239d6de7f4abc}\label{main_8c_a9f01ffb72325e6328a2239d6de7f4abc}} 
+uint8\+\_\+t {\bfseries uart\+Rx\+Received}
+\item 
+\mbox{\Hypertarget{main_8c_a2542ac6d4440b9e1c4a6435c55c79df3}\label{main_8c_a2542ac6d4440b9e1c4a6435c55c79df3}} 
+uint8\+\_\+t {\bfseries uart\+Rx\+Buffer} \mbox{[}UART\+\_\+\+RX\+\_\+\+BUFFER\+\_\+\+SIZE\mbox{]}
+\item 
+\mbox{\Hypertarget{main_8c_a3f98e2db2fa0d8f0cfd87b887576207f}\label{main_8c_a3f98e2db2fa0d8f0cfd87b887576207f}} 
+uint8\+\_\+t {\bfseries uart\+Tx\+Buffer} \mbox{[}UART\+\_\+\+TX\+\_\+\+BUFFER\+\_\+\+SIZE\mbox{]}
+\item 
+\mbox{\Hypertarget{main_8c_ac447f9160da08991cab17ea599968357}\label{main_8c_ac447f9160da08991cab17ea599968357}} 
+uint32\+\_\+t {\bfseries adc\+Buffer} \mbox{[}1\mbox{]} = \{0\}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\+: Main program body 
+
+\begin{DoxyAttention}{Attention}
+
+\end{DoxyAttention}
+Copyright (c) 2022 STMicroelectronics. All rights reserved.
+
+This software is licensed under terms that can be found in the LICENSE file in the root directory of this software component. If no LICENSE file comes with this software, it is provided AS-\/\+IS. 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{main_8c_abc513dd972081ae765b6949a62872eb7}\label{main_8c_abc513dd972081ae765b6949a62872eb7}} 
+\index{main.c@{main.c}!\_\_io\_putchar@{\_\_io\_putchar}}
+\index{\_\_io\_putchar@{\_\_io\_putchar}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{\_\_io\_putchar()}{\_\_io\_putchar()}}
+{\footnotesize\ttfamily int \+\_\+\+\_\+io\+\_\+putchar (\begin{DoxyParamCaption}\item[{int}]{ch }\end{DoxyParamCaption})}
+
+
+
+Fonction qui permet d\textquotesingle{}utiliser le printf avec l\textquotesingle{}USART2. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em ch} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ch 
+\end{DoxyReturn}
+\mbox{\Hypertarget{main_8c_a1730ffe1e560465665eb47d9264826f9}\label{main_8c_a1730ffe1e560465665eb47d9264826f9}} 
+\index{main.c@{main.c}!Error\_Handler@{Error\_Handler}}
+\index{Error\_Handler@{Error\_Handler}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{Error\_Handler()}{Error\_Handler()}}
+{\footnotesize\ttfamily void Error\+\_\+\+Handler (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+This function is executed in case of error occurrence. 
+
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{main_8c_af20a88180db1113be1e89266917d148b}\label{main_8c_af20a88180db1113be1e89266917d148b}} 
+\index{main.c@{main.c}!HAL\_ADC\_ConvCpltCallback@{HAL\_ADC\_ConvCpltCallback}}
+\index{HAL\_ADC\_ConvCpltCallback@{HAL\_ADC\_ConvCpltCallback}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{HAL\_ADC\_ConvCpltCallback()}{HAL\_ADC\_ConvCpltCallback()}}
+{\footnotesize\ttfamily void HAL\+\_\+\+ADC\+\_\+\+Conv\+Cplt\+Callback (\begin{DoxyParamCaption}\item[{ADC\+\_\+\+Handle\+Type\+Def $\ast$}]{hadc }\end{DoxyParamCaption})}
+
+
+
+Fonction appelée à la fin de la conversion de l\textquotesingle{}ADC. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em hadc} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{main_8c_a0cd91fd3a9608559c2a87a8ba6cba55f}\label{main_8c_a0cd91fd3a9608559c2a87a8ba6cba55f}} 
+\index{main.c@{main.c}!HAL\_GPIO\_EXTI\_Callback@{HAL\_GPIO\_EXTI\_Callback}}
+\index{HAL\_GPIO\_EXTI\_Callback@{HAL\_GPIO\_EXTI\_Callback}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{HAL\_GPIO\_EXTI\_Callback()}{HAL\_GPIO\_EXTI\_Callback()}}
+{\footnotesize\ttfamily void HAL\+\_\+\+GPIO\+\_\+\+EXTI\+\_\+\+Callback (\begin{DoxyParamCaption}\item[{uint16\+\_\+t}]{GPIO\+\_\+\+Pin }\end{DoxyParamCaption})}
+
+
+
+Fonction appelée lors d\textquotesingle{}une interruption EXTI. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em GPIO\+\_\+\+Pin} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{main_8c_a8a3b0ad512a6e6c6157440b68d395eac}\label{main_8c_a8a3b0ad512a6e6c6157440b68d395eac}} 
+\index{main.c@{main.c}!HAL\_TIM\_PeriodElapsedCallback@{HAL\_TIM\_PeriodElapsedCallback}}
+\index{HAL\_TIM\_PeriodElapsedCallback@{HAL\_TIM\_PeriodElapsedCallback}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{HAL\_TIM\_PeriodElapsedCallback()}{HAL\_TIM\_PeriodElapsedCallback()}}
+{\footnotesize\ttfamily void HAL\+\_\+\+TIM\+\_\+\+Period\+Elapsed\+Callback (\begin{DoxyParamCaption}\item[{TIM\+\_\+\+Handle\+Type\+Def $\ast$}]{htim }\end{DoxyParamCaption})}
+
+
+
+Fonction appelée lors du Callback des Timers. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em htim} & \\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyRetVals}{Return values}
+{\em } & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{main_8c_a840291bc02cba5474a4cb46a9b9566fe}\label{main_8c_a840291bc02cba5474a4cb46a9b9566fe}} 
+\index{main.c@{main.c}!main@{main}}
+\index{main@{main}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+The application entry point. 
+
+
+\begin{DoxyRetVals}{Return values}
+{\em int} & \\
+\hline
+\end{DoxyRetVals}
+\mbox{\Hypertarget{main_8c_a70af21c671abfcc773614a9a4f63d920}\label{main_8c_a70af21c671abfcc773614a9a4f63d920}} 
+\index{main.c@{main.c}!SystemClock\_Config@{SystemClock\_Config}}
+\index{SystemClock\_Config@{SystemClock\_Config}!main.c@{main.c}}
+\doxysubsubsection{\texorpdfstring{SystemClock\_Config()}{SystemClock\_Config()}}
+{\footnotesize\ttfamily void System\+Clock\+\_\+\+Config (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+System Clock Configuration. 
+
+
+\begin{DoxyRetVals}{Return values}
+{\em None} & \\
+\hline
+\end{DoxyRetVals}
+Configure the main internal regulator output voltage
+
+Initializes the RCC Oscillators according to the specified parameters in the RCC\+\_\+\+Osc\+Init\+Type\+Def structure.
+
+Initializes the CPU, AHB and APB buses clocks

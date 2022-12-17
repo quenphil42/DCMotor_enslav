@@ -1,13 +1,24 @@
-/*
- * PI.c
- *
- *  Created on: Dec 8, 2022
- *      Author: quent
- */
+/**
+  ******************************************************************************
+  * @file    PI.c
+  * @brief   Ce fichier contient le code en rapport avec l'asservissement
+  ******************************************************************************
+  *  Created on: Dec 8, 2022
+  *      Author: quent
+  *
+  ******************************************************************************
+  */
 
 
 #include "PI.h"
 
+/**
+ * @brief Fonction qui fixe la sortie du PI et les valeurs des mémoires à 0.0
+ *
+ * @param struct pi
+ *
+ * @return None
+ */
 void PIController_Init(PIController *pi)
 {
 
@@ -18,6 +29,15 @@ void PIController_Init(PIController *pi)
 
 }
 
+/**
+ * @brief Fonction qui met à jour les valeurs de la structure PI et renvoi la sortie du bloc PI
+ *
+ * @param struct pi
+ * @param consigne
+ * @param measurement
+ *
+ * @return None
+ */
 float PIController_Update(PIController *pi, float consigne, float measurement)
 {
 
@@ -40,9 +60,4 @@ float PIController_Update(PIController *pi, float consigne, float measurement)
 
     return pi->out;
 
-}
-
-float PIPrint_Out(PIController *pi)
-{
-	return pi->out;
 }
