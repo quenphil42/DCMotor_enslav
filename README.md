@@ -1,10 +1,13 @@
-# DCMotor_enslav
-This project is based on a practical training at ENSEA. The project objectives are to servo by speed and current a DC Motor with an STM32.
+# DCMotor_enslav - TP Systeme Acquisition et Commande ENSEA
 
-We will be using the NUCLEO-G474RE board with a custom made shield. The shield is required to control the inverter.
-The team used Doxygen as documentation generation software.
-User defined values are set via wildcards (ex: int a = 256; ==> int a = BUFFER_SIZE;)
-User defined Variables are written with a capital letter on each word for easy identification (ex: int userDefinedVariable;)
+L'objectif de ce TP est de réaliser l'asservissement d'une machine à courant continu (MCC) à l'aide de deux boucles imbriquées en vitesse et en courant.
+Nous utiliserons tout au long du projet un shell permetant de réaliser une interface homme machine (IHM) afin de pouvoir tester nos programmes et récupérer des informations sans recompiler.
+
+D'un point de vue hardware, nous sommes muni d'une NUCLEO-G474RE, d'un onduleur réalisant l'interface de puissance ainsi que d'une MCC munie d'un tachimètre. Aussi nous disposons d'un shield réalisant l'interface entre la NUCLEO, l'onduleur et le tachimètre.
+
+Vous trouverez une documentation doxygène dans le dossier Src du projet STM32CubeIDE dans Git.
+
+
 
 ## 1. Config 
 To start off, we configure the NUCLEO pins to the configuration givven right bellow:
