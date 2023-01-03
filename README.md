@@ -50,7 +50,9 @@ Une fonction Pinout permet notemment de retrouver quels sont les branchements à
 
 ## 3. Commande MCC en boucle ouverte
 
-# 3.1. Generation de la PWM
+L'ensemble des fonctions en lien avec la commande de la MCC et l'initialisation de l'onduleur se trouvent dans les fichiers "commandeMCC.c" et "commandeMCC.h".
+
+### 3.1. Generation de la PWM
 
 Pour commander une MCC en boucle ouverte il suffit de commander 4 transistors de puissance présent dans l'onduleur. Au niveau de leur commande nous avons utilisé les voies les broches TIM1_CH1, TIM1_CH1N, TIM1_CH2 et TIM1_CH2N toutes associées au Timer1.
 
@@ -74,7 +76,7 @@ Aussi nous avons fixé la valeur du alpha à 512 = ARR_MAX_VALUE / 2 afin de fix
 
 La commande des deux channels est complémentaire. Cela signifie que si le CaptureCompareRegister du Channel1 est à la valeur x, alors le CaptureCompareRegister du Channel2 est à la valeur ARR_MAX_VALUE - x.
 
-# 3.2. Initialisation de l'onduleur
+### 3.2. Initialisation de l'onduleur
 
 Afin d'enlever les securités de l'onduleur il suffit de fixer à l'etat haut la broche ISO_RESET pendant 2us comme indiqué dans la datasheet.
 ![image](https://user-images.githubusercontent.com/113909680/210418857-69e9e9cd-54bd-428a-bc00-c8a04b8304d1.png)
@@ -85,20 +87,61 @@ Suite à cela nous avons configuré une fonction init_Onduleur() (qui devrait s'
 Celle-ci pouvait également être appelé en appuyant sur le bouton utilisateur, néanmoins nous avons préféré dédié ce bouton à l'activation (ou non) de l'ecriture des données dans le shell. Le code est néanmoins toujours présent en commentaire pour répondre aux attentes du TP.
 
 
+### 3.3. Premiers tests
+
+Afin de commander la MCC nous avons definis une fonction setAlpha qui permet depuis le shell de fixer la valeur de alpha entre 0 et 100 (commande en %). 0 correspond à la vitesse maximale de la MCC dans le sens "négatif", 50 correspond à la position neutre où la MCC ne tourne pas et 100 correspond à la vitesse maximale dans le sens "positif".
+
+Le moteur tourne dans le sens "positif" lorsque la valeur des CCR est superieur à 512 (soit alpha > 50) et dans le sens "negatif" lorsque alpha est inferieur à ARR_MAX_VALUE/2 (soit alpha < 50).
+Cependant si on demande à la MCC d'aller trop vite sans accelerer progressivement l'appel de courant est trop important et le module de puissance se met en securité.
+
+En accelerant progressivement, le courant est plus modéré et on peut augmenter la vitesse de rotation. Nous avons ainsi réalisé une fonction Swing qui fait accelerer puis deceleré la MCC de facon progressive.
+
+Le phenomene de mise en securité de l'onduleur est accentué puisque le gain en courant qui devrait être de l'ordre de 10 et en réalité de 3. Ainsi, au lieu de se mettre en sécurité à 2A l'onduleur coupe à 600mA.
+
+Nous avons donc interet à réaliser un asservissement pour pouvoir commander en vitesse la MCC en prenant en compte le bridage en courant.
+
+
+
+## 4. Asservissement
+
+L'ensemble des fonctions en lien avec l'asservissement de la MCC se trouvent dans les fichiers "PI.c" et "PI.h".
+
+Pour réaliser l'asservissement de la MCC nous avons réalisé deux boucles imbriquées et utilisé des correcteurs Proportionnels Integrals (PI) pour controler la commande en courant et en vitesse.
+
+![image](https://user-images.githubusercontent.com/113909680/210424204-011c0492-4955-4fd3-9c45-afbd36972ec7.png)
+
+Le réglage des correcteurs se fait étape par étape, nous avons du mettre en place et régler l'asservissement en courant dans un premier temps avant de réaliser celui en vitesse.
+
+Afin que l'asservissement en vitesse se réalise correctement nous avons besoin que l'asservissement du courant soit stabilisé au moment de la mesure de vitesse. Cela implique donc que l'assercissement en courant doit être plus rapide que celui en vitesse. De l'ordre au moins de 10. On choisit de réaliser la lecture du courant avec le Timer1 (celui qui genere les PWM) Cela permet d'avoir une lecture de courant à une fréquence de 16kHz et de limiter les lectures de courant erronées dù à la transition des transistors.
+La position angulaire est mesurée par le Timer4 à une fréquence de 16Hz
+
+### 4.1. Asservissement en courant
+
+Nous avons réalisé un asservissement en courant à la fréquence 16kHz selon le schéma donné ci-dessous
+
+![image](https://user-images.githubusercontent.com/113909680/210427420-460d7f64-0b93-4ef2-9425-6d0ba6e48f71.png)
+
+
+#### 4.1.1. Mesure du courant
+
+La mesure du courant se réalise par un ADC couplé au DMA. Nous avons ainsi une mesure régulière du couran réalisé par l'ADC. celui ci envoi une interruption au DMA lors de la fin d'une conversion. Celui-ci va copier la valeure mesurée dans l'espace en mémoire associé. Ces opérations sont donc transparentes pour le processeur.
+
+Pour avoir une mesure de courant correcte il faut ensuite traiter la donnée brut mesurée afin d'avoir une valeur de 0A lorsque alpha est à 50%. La relation est donnée dans la datasheet du module de puissance néanmoins nous l'avons modifié à cause de l'erreur de gain que nous avons remarqué.
+
+#### 4.1.2. Anti-Wind-Up
+
+#### 4.1.3. Mise en place de l'asservissement
+
+
+### 4.2. Asservissement en vitesse
+
+#### 4.1.1. Mesure de la position et vitesse
+
+#### 4.1.2. Anti-Wind-Up
+
+#### 4.1.3. Mise en place de l'asservissement
+
+
 
 
 ## FIN DU COMPTE RENDU
-## 1. Config 
-To start off, we configure the NUCLEO pins to the configuration givven right bellow:
-![image](https://user-images.githubusercontent.com/113909661/195544779-ca40b81b-0b3d-45dd-8a04-904a3a217c6b.png)
-
-On the custom made PCB, we need to connect the pins as following:
-![image](https://user-images.githubusercontent.com/113909661/205322873-f4ddeada-e1db-4ac6-acd8-8282e608288a.png)
-
-Remember to plug in the DC adapter for the custom board. 
-
-## 2. UART setup for character echoing
-
-We setup the UART2 to give the user an echo of what key is pressed.
-
-
