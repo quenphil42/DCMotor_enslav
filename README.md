@@ -104,7 +104,6 @@ Nous avons donc interet à réaliser un asservissement pour pouvoir commander en
 
 ## 4. Asservissement
 
-L'ensemble des fonctions en lien avec l'asservissement de la MCC se trouvent dans les fichiers "PI.c" et "PI.h".
 
 Pour réaliser l'asservissement de la MCC nous avons réalisé deux boucles imbriquées et utilisé des correcteurs Proportionnels Integrals (PI) pour controler la commande en courant et en vitesse.
 
@@ -115,31 +114,48 @@ Le réglage des correcteurs se fait étape par étape, nous avons du mettre en p
 Afin que l'asservissement en vitesse se réalise correctement nous avons besoin que l'asservissement du courant soit stabilisé au moment de la mesure de vitesse. Cela implique donc que l'assercissement en courant doit être plus rapide que celui en vitesse. De l'ordre au moins de 10. On choisit de réaliser la lecture du courant avec le Timer1 (celui qui genere les PWM) Cela permet d'avoir une lecture de courant à une fréquence de 16kHz et de limiter les lectures de courant erronées dù à la transition des transistors.
 La position angulaire est mesurée par le Timer4 à une fréquence de 16Hz
 
-### 4.1. Asservissement en courant
+
+### 4.1. Architecture du correcteur PI
+
+
+L'ensemble des fonctions en lien avec l'asservissement de la MCC se trouvent dans les fichiers "PI.c" et "PI.h".
+Nous avons réalisé un asservissement PI et non PID car le système de base est déjà initialement un système stable. Le correcteur proportionel permet d'augmenter la vitesse du systeme et l'integrateur le rend stable. Le derivateur n'est donc pas necessaire dans ce cas.
+
+Nous avons creer une structure contenant toutes les informations d'un correcteur PI.
+![image](https://user-images.githubusercontent.com/113909680/210430937-806d9c96-ad23-4eaf-a659-4da9c2473d7a.png)
+Ainsi puisque nous avons réalisés deux asservisemments, les fonctions sont factorisés et les instances sont réalisées proprement et clairement.
+
+Nous avons aussi réalisé des fonctions réalisant l'initialisation du correcteur (notamment lors de l'initialisation de l'onduleur) avec la fonction PIController_Init() ainsi que la mise à jour des valeurs avec la fonction PIController_Update().
+
+### 4.2. Asservissement en courant
 
 Nous avons réalisé un asservissement en courant à la fréquence 16kHz selon le schéma donné ci-dessous
 
 ![image](https://user-images.githubusercontent.com/113909680/210427420-460d7f64-0b93-4ef2-9425-6d0ba6e48f71.png)
 
 
-#### 4.1.1. Mesure du courant
+#### 4.2.1. Mesure du courant
 
 La mesure du courant se réalise par un ADC couplé au DMA. Nous avons ainsi une mesure régulière du couran réalisé par l'ADC. celui ci envoi une interruption au DMA lors de la fin d'une conversion. Celui-ci va copier la valeure mesurée dans l'espace en mémoire associé. Ces opérations sont donc transparentes pour le processeur.
 
 Pour avoir une mesure de courant correcte il faut ensuite traiter la donnée brut mesurée afin d'avoir une valeur de 0A lorsque alpha est à 50%. La relation est donnée dans la datasheet du module de puissance néanmoins nous l'avons modifié à cause de l'erreur de gain que nous avons remarqué.
+Nous avons donc mesuré la valeur du courant pour un alpha fixé à 50% puis mesuré plusieurs valeurs pour determiner le gain réel par une regression linéaire.
 
-#### 4.1.2. Anti-Wind-Up
+On trouve ainsi la relation donnée ci-dessous
+![image](https://user-images.githubusercontent.com/113909680/210429334-c086b4b3-aaff-470e-b4f5-9e0f42848184.png)
+où le gain réel est 2.4 (contrairement à la valeur constructeur donné à 12).
 
-#### 4.1.3. Mise en place de l'asservissement
+#### 4.2.2. Mise en place de l'asservissement
 
 
-### 4.2. Asservissement en vitesse
 
-#### 4.1.1. Mesure de la position et vitesse
 
-#### 4.1.2. Anti-Wind-Up
+### 4.3. Asservissement en vitesse
 
-#### 4.1.3. Mise en place de l'asservissement
+#### 4.3.1. Mesure de la position et vitesse
+
+
+#### 4.3.3. Mise en place de l'asservissement
 
 
 
