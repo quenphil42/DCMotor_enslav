@@ -239,5 +239,19 @@ Puis nous nous sommes heurté à un autre problème, la lenteur de l'asservissem
 
 ## 5. Conclusion
 
+Durant ce TP nous avons pu mettre en application les différents outils vu durants les cours et TD : 
+
+- Utilisation d'un shell
+- Lecture d'un encodeur via un Timer
+- Réaliser une lecture analogique et l'enregistrer grâce au Direct Memory Access (DMA)
+- Generer des PWM alignés centrées avec gestion des temps morts
+- Commander en boucle ouverte un MCC via un module de puissance
+- Mise en place d'un PI
+- Asservissement en courant
+- Asservissement en vitesse
+- Utilisation de doxygene et Github
+
+Ces notions sont les bases de la programmation en système embarqué. Nous avons trouvé ce sujet très enrichissant et avons pris du plaisir à le travailler.
+Pour aller plus loin, nous aurions pu mettre en place FreeRTOS pour gerer les differentes taches et interruptions pour integrer ce TP dans un projet plus grand. Ce TP sera notamment utile pour la realisation de notre projet RobotBeer où interviennent deux MCC avec codeur incremental que nous desirons asservir en vitesse.
 
 ## FIN DU COMPTE RENDU
