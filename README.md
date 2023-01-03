@@ -1,5 +1,6 @@
 # DCMotor_enslav - TP Systeme Acquisition et Commande ENSEA
 
+
 L'objectif de ce TP est de réaliser l'asservissement d'une machine à courant continu (MCC) à l'aide de deux boucles imbriquées en vitesse et en courant.
 Nous utiliserons tout au long du projet un shell permetant de réaliser une interface homme machine (IHM) afin de pouvoir tester nos programmes et récupérer des informations sans recompiler.
 
@@ -10,6 +11,7 @@ Vous trouverez une documentation doxygène dans le dossier Src du projet STM32Cu
 
 
 ## 1. Config
+
 
 Tout au long du projet nous avons travaillé sur le logiciel STM32CubeIDE version 1.10.1 
 
@@ -24,14 +26,17 @@ Pour débuter le projet nous avons configuré les broches d'entrées et de sorti
 Nous avons associés différents labels aux broches afin que le code soit le plus explicite possible
 
 Ci-dessous vous trouverez la configuration que nous avons choisit pour ce TP.
+
 ![image](https://user-images.githubusercontent.com/113909680/210385445-a4003bec-f136-4493-abe0-0ddb433b127b.png)
 
 Sur le connecteur 40 broches du shield on vient réaliser le branchement montré sur le schéma ci-dessous afin de connecter les broches physiques de l'onduleur aux broches configurées par la NUCLEO.
+
 ![image](https://user-images.githubusercontent.com/113909661/205322873-f4ddeada-e1db-4ac6-acd8-8282e608288a.png)
 
 
 
 ## 2. Configuration de l'UART et réalisation de l'IHM
+
 
 Sous STM32CubeIDE nous avons configuré la communication UART2 avec interruption afin de permettre la connection par un port serie de la NUCLEO vers un ordinateur et inversement.
 
@@ -50,13 +55,17 @@ Une fonction Pinout permet notemment de retrouver quels sont les branchements à
 
 ## 3. Commande MCC en boucle ouverte
 
+
 L'ensemble des fonctions en lien avec la commande de la MCC et l'initialisation de l'onduleur se trouvent dans les fichiers "commandeMCC.c" et "commandeMCC.h".
 
+
 ### 3.1. Generation de la PWM
+
 
 Pour commander une MCC en boucle ouverte il suffit de commander 4 transistors de puissance présent dans l'onduleur. Au niveau de leur commande nous avons utilisé les voies les broches TIM1_CH1, TIM1_CH1N, TIM1_CH2 et TIM1_CH2N toutes associées au Timer1.
 
 La NUCLEO fonctionne à une frequence de 160MHz comme montré dans la capture ci-dessous.
+
 ![image](https://user-images.githubusercontent.com/113909680/210412028-f46c2cc4-5f05-4c88-9eb3-dfda564588ef.png)
 
 Ainsi nous avons paramétré le Timer1 avec un prescaler de 10 et un compteur à 1024 ce qui donne une fréquence de fonctionnement f_tim1 = 160.10^6 / 10 / 1024 = 15625 Hz et environ égale à 16kHz. 16kHz est la valeur preconnisée parle constructeur du module de puissance comme l'indiquera la capture ci-dessous.
@@ -65,6 +74,7 @@ On dispose ainsi d'une plage de 1024 valeur de alpha differente afin de piloter 
 Le Timer est paramétré pour generé sur 2 channels des signaux PWM complémentaires décalés.
 
 Selon la documentation de l'onduleur dont un extrait est donné ci-dessous, des temps morts de 2us ou plus sont conseillés pour les six tranistor du module de puissance.
+
 ![image](https://user-images.githubusercontent.com/113909680/210416528-0eb02254-e6ed-4c15-aeac-36896295c530.png)
 
 Nous avons fixés les temps morts à la valeur 208. Ceux-ci permettent d'eviter les courts circuits pendant la periode de commutation des transitors (qui est non nulle). Sur la NUCLEO cela correspond à une valeur de 
@@ -76,9 +86,12 @@ Aussi nous avons fixé la valeur du alpha à 512 = ARR_MAX_VALUE / 2 afin de fix
 
 La commande des deux channels est complémentaire. Cela signifie que si le CaptureCompareRegister du Channel1 est à la valeur x, alors le CaptureCompareRegister du Channel2 est à la valeur ARR_MAX_VALUE - x.
 
+
 ### 3.2. Initialisation de l'onduleur
 
+
 Afin d'enlever les securités de l'onduleur il suffit de fixer à l'etat haut la broche ISO_RESET pendant 2us comme indiqué dans la datasheet.
+
 ![image](https://user-images.githubusercontent.com/113909680/210418857-69e9e9cd-54bd-428a-bc00-c8a04b8304d1.png)
 
 Nous avons donc utilisé la fonction HAL_Delay(1) qui nous permet de manière bloquante d'attendre environ 1ms ce qui est largement superieur aux 2us demandées. L'utilisation de HAL_Delay n'est pas dérangeante dans ce cas puisqu'elle n'intervient que dans la phase d'initialisation du module de puissance.
@@ -88,6 +101,7 @@ Celle-ci pouvait également être appelé en appuyant sur le bouton utilisateur,
 
 
 ### 3.3. Premiers tests
+
 
 Afin de commander la MCC nous avons definis une fonction setAlpha qui permet depuis le shell de fixer la valeur de alpha entre 0 et 100 (commande en %). 0 correspond à la vitesse maximale de la MCC dans le sens "négatif", 50 correspond à la position neutre où la MCC ne tourne pas et 100 correspond à la vitesse maximale dans le sens "positif".
 
@@ -99,7 +113,6 @@ En accelerant progressivement, le courant est plus modéré et on peut augmenter
 Le phenomene de mise en securité de l'onduleur est accentué puisque le gain en courant qui devrait être de l'ordre de 10 et en réalité de 3. Ainsi, au lieu de se mettre en sécurité à 2A l'onduleur coupe à 600mA.
 
 Nous avons donc interet à réaliser un asservissement pour pouvoir commander en vitesse la MCC en prenant en compte le bridage en courant.
-
 
 
 ## 4. Asservissement
@@ -122,10 +135,15 @@ L'ensemble des fonctions en lien avec l'asservissement de la MCC se trouvent dan
 Nous avons réalisé un asservissement PI et non PID car le système de base est déjà initialement un système stable. Le correcteur proportionel permet d'augmenter la vitesse du systeme et l'integrateur le rend stable. Le derivateur n'est donc pas necessaire dans ce cas.
 
 Nous avons creer une structure contenant toutes les informations d'un correcteur PI.
+
 ![image](https://user-images.githubusercontent.com/113909680/210430937-806d9c96-ad23-4eaf-a659-4da9c2473d7a.png)
+
 Ainsi puisque nous avons réalisés deux asservisemments, les fonctions sont factorisés et les instances sont réalisées proprement et clairement.
 
 Nous avons aussi réalisé des fonctions réalisant l'initialisation du correcteur (notamment lors de l'initialisation de l'onduleur) avec la fonction PIController_Init() ainsi que la mise à jour des valeurs avec la fonction PIController_Update().
+
+Sont pris en compte dans la fonction PIController_Update() les limites par ecretage ainsi que l'anti windup. L'anti windup permet de limiter l'emballement de l'integrateur par saturation de la valeur calculée par le correcteur.
+
 
 ### 4.2. Asservissement en courant
 
@@ -136,28 +154,90 @@ Nous avons réalisé un asservissement en courant à la fréquence 16kHz selon l
 
 #### 4.2.1. Mesure du courant
 
+
 La mesure du courant se réalise par un ADC couplé au DMA. Nous avons ainsi une mesure régulière du couran réalisé par l'ADC. celui ci envoi une interruption au DMA lors de la fin d'une conversion. Celui-ci va copier la valeure mesurée dans l'espace en mémoire associé. Ces opérations sont donc transparentes pour le processeur.
 
 Pour avoir une mesure de courant correcte il faut ensuite traiter la donnée brut mesurée afin d'avoir une valeur de 0A lorsque alpha est à 50%. La relation est donnée dans la datasheet du module de puissance néanmoins nous l'avons modifié à cause de l'erreur de gain que nous avons remarqué.
 Nous avons donc mesuré la valeur du courant pour un alpha fixé à 50% puis mesuré plusieurs valeurs pour determiner le gain réel par une regression linéaire.
 
 On trouve ainsi la relation donnée ci-dessous
+
 ![image](https://user-images.githubusercontent.com/113909680/210429334-c086b4b3-aaff-470e-b4f5-9e0f42848184.png)
+
 où le gain réel est 2.4 (contrairement à la valeur constructeur donné à 12).
+
 
 #### 4.2.2. Mise en place de l'asservissement
 
+Pour mettre en place l'asservissement nous avons defini une instance de la structure PIController defini dans le fichier "PI.h". Celle ci contient les valeurs de Kp, Ki ainsi que les limites et les deux mémoires et la sortie.
 
+L'entrée du correcteur est la consigne de courant, sa sortie est la valeur de alpha le rapport cyclique des PWM.
+
+Lors de l'initialisation nous fixons les valeurs des mémoires à 0 pour le correcteur proportionnel et 50% pour l'integrale puisque nous souhaitons un courant stable à 0A et donc un alpha à 50%. Lors de l'initilisation de l'onduleur on reinitialise egalement les memoires du PI pour supprimer la dérive de l'integrateur du aux imprecisions de lecture.
+
+La fonction PIController_Update() intervient lors de l'interruption du Timer1 à 16kHz pour avoir l'asservissement le plus rapide possible
+
+#### 4.2.3. Test
+
+Une fois l'asservissement mis en place nous avons ajouté au shell une fonction permettant de rentrer la consigne en courant. Les essais sont concluants pour les coefficients suivants :
+- KP_ALPHA = 0.10
+- KI_ALPHA = 0.80
+
+Theoriquement nous avions déterminé grâce à Matlab des valeurs du même ordre de grandeur mais moins robustes en réalité dù à la réalité du materiel.
+Nous trouvons que le système reste long à atteindre le régime permanent et cela va certainement poser problème pour l'asservissement en vitesse.
+
+En rentrant une consigne de 2.0A et en mesurant le courant effectif via une sonde on peut valider que l'asservissement fonctionne correctement.
+
+En effet si l'asservissement en vitesse n'est pas assez rapide, alors l'asservissement en vitesse aura lieu sur un régime transitoire et le correcteur produira des valeurs erronnées.
+
+Remarque : Pour supprimer l'asservissement en courant il suffit de commenter le flag it_tim1 dans la fonction HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) 
 
 
 ### 4.3. Asservissement en vitesse
 
+
+Nous avons réalisé un asservissement en vitesse à la fréquence 16Hz selon le schéma donné ci-dessous
+
+![image](https://user-images.githubusercontent.com/113909680/210455661-f11ff4ee-be0b-435e-9206-ea522f6d47a8.png)
+
+
 #### 4.3.1. Mesure de la position et vitesse
+
+Afin de connaitre la vitesse de rotation du moteur, on doit réalisé la dérivée temporelle de la position qu'on peut obtenir grâce à un codeur incrémentale à 1024 positions.
+
+Nous avons configuré le Timer2 en EncoderMode ce qui permet de récuperer la variation angulaire entre deux instants grâce au registre CNT du Timer.
+A chaque interruption du Timer 4 qui fonctionne à une fréquence de 16Hz on vient lire la valeur du registre CNT et stocker sa difference avec 2^31 (qui correspond à la moitiée du TIM2_ARR_MAX_VALUE fixé à 2^32). 
+
+![image](https://user-images.githubusercontent.com/113909680/210456595-a1aa6309-6671-483a-a070-a4c1eb4310b1.png)
+
+On fixe ensuite la valeur du registre CNT à 2^31. Ainsi en considerant la vitesse maximale de la MCC, nous avons la certitude qu'en 62ms l'encodeur n'atteindra pas les 2^31 increments qui ferait repasser le compteur à 0 ou 2^32 selon le sens de rotation de la MCC.
+
+![image](https://user-images.githubusercontent.com/113909680/210457338-8b678ae5-d790-4b6b-bbad-10706f6453e3.png)
+
+Pour obtenir la vitesse en tr/min on mesure entre deux instant le nombre d'icrément parcouru et on applique la relation suivante
+Omega = (incrément / 1024) / (1 / f_echantillonage / 60) en tr/min
 
 
 #### 4.3.3. Mise en place de l'asservissement
 
+La mise en place de l'asservissement est très similaire à la mise en place de l'assservissement en courant. 
+L'entrée du correcteur est la consigne de vitesse en tr/min, sa sortie est la valeur de consigne de courant en A.
+Les mémoires sont initialisées  toutes les deux à 0.0 puisque la sortie du PI est une consigne de courant qu'on désire nulle au moment de l'initialisation.
+On definit une instance PI_vitesse qu'on initialise. A chaque interruption du Timer4 (à 16Hz) on mesure la vitesse et on execute la fonction PIController_Update().
 
+
+#### 4.3.3. Test
+
+
+Une fois l'asservissement mis en place nous avons ajouté au shell une fonction permettant de rentrer la consigne en courant. Les essais sont concluants pour les coefficients suivants :
+- KP_ALPHA = 0.10  //contre  0.72 sur matlab
+- KI_ALPHA = 2.00  //contre 15.94 sur matlab 
+
+Nous avons rencontrés quelques problèmes lors de la mise en place de l'asservissement en vitesse. Dans un premier temps car notre mesure de vitesse était érronée à 16Hz (elle était calculé sur la base d'une mesure à 1Hz ce qui rendait les valeurs incohérentes) ce qui avait pour conséquence de faire monter la MCC à vitesse maximale. En effet le correcteur souhaitait compenser l'erreur de lecture qui indiquait une vitesse 16 fois trop faible.
+Puis nous nous sommes heurté à un autre problème, la lenteur de l'asservissement en courant. Nous n'étions pas en régime étbli en courant lors des mesures de vitesse ce qui rendait le système peu efficace.
+
+
+## 5. Conclusion
 
 
 ## FIN DU COMPTE RENDU
