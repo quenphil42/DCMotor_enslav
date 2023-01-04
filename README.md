@@ -47,9 +47,7 @@ Nous avons ensuite inclus dans le projet les fichiers « shell2.c » et « shell
 Le Shell est muni d'une fonction help qui définit les différentes commandes qu'on peut effectuer ainsi qu'une description des fonctions.
 Une fonction Pinout permet notamment de retrouver quels sont les branchements à réaliser pour pouvoir faire fonctionner l'onduleur.
 
-!!!!!!!!! INCLURE PHOTO DU SHELL ICI !!!!!
-
-!!!!! CHANGER IHM INIT PAR "start" et ajouter un "stop"
+La fonction "start" est appelée initOnduleur dans notre projet.
 
 
 
@@ -62,27 +60,37 @@ L'ensemble des fonctions en lien avec la commande de la MCC et l'initialisation 
 ### 3.1. Génération de la PWM
 
 
-Pour commander une MCC en boucle ouverte il suffit de commander 4 transistors de puissance présent dans l'onduleur. Au niveau de leur commande nous avons utilisé les voies les broches TIM1_CH1, TIM1_CH1N, TIM1_CH2 et TIM1_CH2N toutes associées au Timer1.
+Pour commander une MCC en boucle ouverte il suffit de commander 4 transistors de puissance présent dans l'onduleur. Au niveau de leur commande nous avons utilisé les voies TIM1_CH1, TIM1_CH1N, TIM1_CH2 et TIM1_CH2N toutes associées au Timer1.
 
 La NUCLEO fonctionne à une fréquence de 160MHz comme montré dans la capture ci-dessous.
 
 ![image](https://user-images.githubusercontent.com/113909680/210412028-f46c2cc4-5f05-4c88-9eb3-dfda564588ef.png)
 
-Ainsi nous avons paramétré le Timer1 avec un prescaler de 10 et un compteur à 1024 ce qui donne une fréquence de fonctionnement f_tim1 = 160.10^6 / 10 / 1024 = 15625 Hz et environ égale à 16kHz. 16kHz est la valeur préconisée parle constructeur du module de puissance comme l'indiquera la capture ci-dessous.
+Ainsi nous avons paramétré le Timer1 avec un prescaler de 10 et un compteur à 1024 ce qui donne une fréquence de fonctionnement f_tim1 = 160.10^6 / 10 / 1024 = 15625 Hz et environ égale à 16kHz. 16kHz est la valeur préconisée par le constructeur du module de puissance comme l'indiquera la capture ci-dessous.
 
-On dispose ainsi d'une plage de 1024 valeur de alpha différente afin de piloter en vitesse notre MCC, soit une commande sur 10 bits comme le demande le cahier des charges.
+On dispose ainsi d'une plage de 1024 valeurs de alpha différente afin de piloter en vitesse notre MCC, soit une commande sur 10 bits comme le demande le cahier des charges.
 Le Timer est paramétré pour générer sur 2 channels des signaux PWM complémentaires décalés.
 
 Selon la documentation de l'onduleur dont un extrait est donné ci-dessous, des temps morts de 2us ou plus sont conseillés pour les six transistors du module de puissance.
 
 ![image](https://user-images.githubusercontent.com/113909680/210416528-0eb02254-e6ed-4c15-aeac-36896295c530.png)
 
-Nous avons fixé les temps morts à la valeur 208. Ceux-ci permettent d'éviter les courts circuits pendant la période de commutation des transistors (qui est non nulle). Sur la NUCLEO cela correspond à une valeur de 
-dt = [127 + 2 * (208-128)] * tds = !!!!!!! INSERER VALEUR !!!!!!!  > 2 us recommandés.
+Nous avons fixé les temps morts à la valeur 208. Ceux-ci permettent d'éviter les courts circuits pendant la période de commutation des transistors (qui est non nulle). Sur la NUCLEO on a : 
+t_dt / t_dts = 2.10^-6 / (1/160 . 10^-6) = 320
+
+Rappel : 
+- pour x allant de   0 à 127, DTG[x] = x
+- pour x allant de 128 à 254, DTG[x] = 127 + (x-127).2
+- pour x allant de 255 à 508, DTG[x] = 254 + 4.x
+
+Ainsi, La valeur du deadtime pour un ratio de 320 correspond à une valeur de DTG(7:0) : 208
 
 ![image](https://user-images.githubusercontent.com/113909680/210417477-edee0be2-4402-41d3-84e3-8fa7ea6dfa91.png)
 
-Aussi nous avons fixé la valeur du alpha à 512 = ARR_MAX_VALUE / 2 afin de fixer la valeur moyenne vu par la MCC à 0V afin qu’elle reste statique et n'appelle pas un courant trop élevé à l'initialisation.
+![image](https://user-images.githubusercontent.com/113909680/210463052-790302da-0a43-412f-b76d-c4c1dd5ef6e6.png)
+
+
+Aussi nous avons fixé la valeur du alpha à 512 = ARR_MAX_VALUE / 2 afin d'avoir une valeur moyenne vu par la MCC à 0V. Cela permet au moteur de rester statique et de n'appeller aucun courant à l'initialisation.
 
 La commande des deux channels est complémentaire. Cela signifie que si le CaptureCompareRegister du Channel1 est à la valeur x, alors le CaptureCompareRegister du Channel2 est à la valeur ARR_MAX_VALUE - x.
 
@@ -105,12 +113,12 @@ Celle-ci pouvait également être appelé en appuyant sur le bouton utilisateur,
 
 Afin de commander la MCC nous avons définis une fonction setAlpha qui permet depuis le shell de fixer la valeur de alpha entre 0 et 100 (commande en %). 0 correspond à la vitesse maximale de la MCC dans le sens "négatif", 50 correspond à la position neutre où la MCC ne tourne pas et 100 correspond à la vitesse maximale dans le sens "positif".
 
-Le moteur tourne dans le sens "positif" lorsque la valeur des CCR est supérieure à 512 (soit alpha > 50) et dans le sens "négatif" lorsque alpha est inférieur à ARR_MAX_VALUE/2 (soit alpha < 50).
+Le moteur tourne dans le sens "positif" lorsque la valeur du CCR de la channel1 est supérieure à 512 (soit alpha > 50) et dans le sens "négatif" lorsque la valeur la valeur du CCR de la channel1 est inférieur à ARR_MAX_VALUE/2 (soit alpha < 50).
 Cependant si on demande à la MCC d'aller trop vite sans accélérer progressivement l'appel de courant est trop important et le module de puissance se met en sécurité.
 
 En accélérant progressivement, le courant est plus modéré et on peut augmenter la vitesse de rotation. Nous avons ainsi réalisé une fonction Swing qui fait accélérer puis décélérer la MCC de façon progressive.
 
-Le phénomène de mise en sécurité de l'onduleur est accentué puisque le gain en courant qui devrait être de l'ordre de 10 et en réalité de 3. Ainsi, au lieu de se mettre en sécurité à 2A l'onduleur coupe à 600mA.
+Le phénomène de mise en sécurité de l'onduleur est accentué puisque le gain en courant qui devrait être de l'ordre de 12 et en réalité de 2.4. Ainsi, l'onduleur se met en sécuité si le courant d'appel est supérieur à 2.0A.
 
 Nous avons donc intérêt à réaliser un asservissement pour pouvoir commander en vitesse la MCC en prenant en compte le bridage en courant.
 
@@ -124,17 +132,17 @@ Pour réaliser l'asservissement de la MCC nous avons réalisé deux boucles imbr
 
 Le réglage des correcteurs se fait étape par étape, nous avons dû mettre en place et régler l'asservissement en courant dans un premier temps avant de réaliser celui en vitesse.
 
-Afin que l'asservissement en vitesse se réalise correctement nous avons besoin que l'asservissement du courant soit stabilisé au moment de la mesure de vitesse. Cela implique donc que l'asservissement en courant doit être plus rapide que celui en vitesse. De l'ordre au moins de 10. On choisit de réaliser la lecture du courant avec le Timer1 (celui qui génère les PWM) Cela permet d'avoir une lecture de courant à une fréquence de 16kHz et de limiter les lectures de courant erronées dû à la transition des transistors.
-La position angulaire est mesurée par le Timer4 à une fréquence de 16Hz
+Afin que l'asservissement en vitesse se réalise correctement nous avons besoin que l'asservissement du courant soit stabilisé au moment de la mesure de vitesse. Cela implique donc que l'asservissement en courant doit être plus rapide que celui en vitesse. De l'ordre au moins de 10. Nous avons choisit de réaliser la lecture du courant avec le Timer1 (celui qui génère les PWM). Cela permet d'avoir une lecture de courant à une fréquence de 16kHz et de limiter les lectures de courant erronées dû à la transition des transistors.
+La position angulaire est mesurée par le Timer4 à une fréquence de 16Hz.
 
 
 ### 4.1. Architecture du correcteur PI
 
 
 L'ensemble des fonctions en lien avec l'asservissement de la MCC se trouvent dans les fichiers "PI.c" et "PI.h".
-Nous avons réalisé un asservissement PI et non PID car le système de base est déjà initialement un système stable. Le correcteur proportionnel permet d'augmenter la vitesse du système et l'intégrateur le rend stable. Le dérivateur n'est donc pas nécessaire dans ce cas.
+Nous avons réalisé un asservissement PI et non PID car le système de base est initialement un système stable. Le correcteur proportionnel permet d'augmenter la vitesse du système et l'intégrateur le rend stable. Le dérivateur n'est donc pas nécessaire dans ce cas.
 
-Nous avons créé une structure contenant toutes les informations d'un correcteur PI.
+Nous avons créé une structure PIController contenant toutes les informations d'un correcteur PI.
 
 ![image](https://user-images.githubusercontent.com/113909680/210430937-806d9c96-ad23-4eaf-a659-4da9c2473d7a.png)
 
@@ -155,9 +163,9 @@ Nous avons réalisé un asservissement en courant à la fréquence 16kHz selon l
 #### 4.2.1. Mesure du courant
 
 
-La mesure du courant se réalise par un ADC couplé au DMA. Nous avons ainsi une mesure régulière du courant réalisé par l'ADC. Celui-ci envoi une interruption au DMA lors de la fin d'une conversion. Celui-ci va copier la valeur mesurée dans l'espace en mémoire associé. Ces opérations sont donc transparentes pour le processeur.
+La mesure du courant se réalise par un ADC couplé au Direct Memory Access (DMA). Nous avons ainsi une mesure régulière du courant réalisé par l'ADC. Celui-ci envoi une interruption au DMA lors de la fin d'une conversion. Celui-ci va copier la valeur mesurée dans l'espace en mémoire associé. Ces opérations sont donc transparentes pour le processeur.
 
-Pour avoir une mesure de courant correcte il faut ensuite traiter la donnée brute mesurée afin d'avoir une valeur de 0A lorsque alpha est à 50%. La relation est donnée dans la datasheet du module de puissance néanmoins nous l'avons modifié à cause de l'erreur de gain que nous avons remarqué.
+Pour avoir une mesure de courant correcte il faut ensuite traiter la donnée brute mesurée afin d'avoir une valeur de 0A lorsque alpha est à 50%. La relation est donnée dans la datasheet du module de puissance. Néanmoins nous l'avons modifié à cause de l'erreur de gain que nous avons remarqué.
 Nous avons donc mesuré la valeur du courant pour un alpha fixé à 50% puis mesuré plusieurs valeurs pour déterminer le gain réel par une régression linéaire.
 
 On trouve ainsi la relation donnée ci-dessous
@@ -169,7 +177,7 @@ Où le gain réel est 2.4 (contrairement à la valeur constructeur donné à 12)
 
 #### 4.2.2. Mise en place de l'asservissement
 
-Pour mettre en place l'asservissement nous avons défini une instance de la structure PIController défini dans le fichier "PI.h". Celle-ci contient les valeurs de Kp, Ki ainsi que les limites et les deux mémoires et la sortie.
+Pour mettre en place l'asservissement nous avons défini une instance de la structure PIController défini dans le fichier "PI.h". Celle-ci contient les valeurs de Kp, Ki ainsi que les limites, les deux mémoires et la sortie.
 
 L'entrée du correcteur est la consigne de courant, sa sortie est la valeur de alpha le rapport cyclique des PWM.
 
@@ -183,10 +191,10 @@ Une fois l'asservissement mis en place nous avons ajouté au shell une fonction 
 - KP_ALPHA = 0.10
 - KI_ALPHA = 0.80
 
+En rentrant une consigne de 2.0A et en mesurant le courant effectif via une sonde on peut valider que l'asservissement fonctionne correctement.
+
 Théoriquement nous avions déterminé grâce à Matlab des valeurs du même ordre de grandeur mais moins robustes en réalité dû à la réalité du matériel.
 Nous trouvons que le système reste long à atteindre le régime permanent et cela va certainement poser problème pour l'asservissement en vitesse.
-
-En rentrant une consigne de 2.0A et en mesurant le courant effectif via une sonde on peut valider que l'asservissement fonctionne correctement.
 
 En effet si l'asservissement en vitesse n'est pas assez rapide, alors l'asservissement en vitesse aura lieu sur un régime transitoire et le correcteur produira des valeurs erronées.
 
@@ -206,7 +214,7 @@ Nous avons réalisé un asservissement en vitesse à la fréquence 16Hz selon le
 Afin de connaitre la vitesse de rotation du moteur, on doit réaliser la dérivée temporelle de la position qu'on peut obtenir grâce à un codeur incrémentale à 1024 positions.
 
 Nous avons configuré le Timer2 en EncoderMode ce qui permet de récupérer la variation angulaire entre deux instants grâce au registre CNT du Timer.
-A chaque interruption du Timer 4 qui fonctionne à une fréquence de 16Hz on vient lire la valeur du registre CNT et stocker sa différence avec 2^31 (qui correspond à la moitié du TIM2_ARR_MAX_VALUE fixé à 2^32). 
+A chaque interruption du Timer4 qui fonctionne à une fréquence de 16Hz on vient lire la valeur du registre CNT et stocker sa différence avec 2^31 (qui correspond à la moitié du TIM2_ARR_MAX_VALUE fixé à 2^32). 
 
 ![image](https://user-images.githubusercontent.com/113909680/210456595-a1aa6309-6671-483a-a070-a4c1eb4310b1.png)
 
@@ -229,12 +237,14 @@ On définit une instance PI_vitesse qu'on initialise. A chaque interruption du T
 #### 4.3.3. Test
 
 
-Une fois l'asservissement mis en place nous avons ajouté au shell une fonction permettant de rentrer la consigne en courant. Les essais sont concluants pour les coefficients suivants :
+Une fois l'asservissement mis en place nous avons ajouté au shell une fonction permettant de rentrer la consigne en vitesse. Les essais sont concluants pour les coefficients suivants :
 - KP_ALPHA = 0.10  //contre  0.72 sur Matlab
 - KI_ALPHA = 2.00  //contre 15.94 sur Matlab 
 
 Nous avons rencontré quelques problèmes lors de la mise en place de l'asservissement en vitesse. Dans un premier temps car notre mesure de vitesse était erronée à 16Hz (elle était calculée sur la base d'une mesure à 1Hz ce qui rendait les valeurs incohérentes) ce qui avait pour conséquence de faire monter la MCC à vitesse maximale. En effet le correcteur souhaitait compenser l'erreur de lecture qui indiquait une vitesse 16 fois trop faible.
 Puis nous nous sommes heurtés à un autre problème, la lenteur de l'asservissement en courant. Nous n'étions pas en régime établi en courant lors des mesures de vitesse ce qui rendait le système peu efficace.
+
+Remarque : Pour supprimer l'asservissement en vitesse il suffit de commenter le flag it_tim4 dans la fonction HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) 
 
 
 ## 5. Conclusion
@@ -245,13 +255,13 @@ Durant ce TP nous avons pu mettre en application les différents outils vus dura
 - Lecture d'un encodeur via un Timer
 - Réaliser une lecture analogique et l'enregistrer grâce au Direct Memory Access (DMA)
 - Générer des PWM alignés centrées avec gestion des temps morts
-- Commander en boucle ouverte un MCC via un module de puissance
+- Commander en boucle ouverte une MCC via un module de puissance
 - Mise en place d'un PI
 - Asservissement en courant
 - Asservissement en vitesse
 - Utilisation de doxygene et Github
 
 Ces notions sont les bases de la programmation en système embarqué. Nous avons trouvé ce sujet très enrichissant et avons pris du plaisir à le travailler.
-Pour aller plus loin, nous aurions pu mettre en place FreeRTOS pour gérer les différentes taches et interruptions pour intégrer ce TP dans un projet plus grand. Ce TP sera notamment utile pour la réalisation de notre projet RobotBeer où interviennent deux MCC avec codeur incrémental que nous désirons asservir en vitesse.
+Pour aller plus loin, nous aurions pu mettre en place un OS (FreeRTOS par exemple) pour gérer les différentes tâches et interruptions pour intégrer ce TP dans un projet plus grand. Ce TP sera notamment utile pour la réalisation de notre projet RobotBeer où interviennent deux MCC avec codeur incrémental que nous désirons asservir en vitesse.
 
 ## FIN DU COMPTE RENDU
