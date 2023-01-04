@@ -40,9 +40,9 @@ Sur le connecteur 40 broches du shield on vient réaliser le branchement montré
 
 Sous STM32CubeIDE nous avons configuré la communication UART2 avec interruption afin de permettre la connexion par un port série de la NUCLEO vers un ordinateur et inversement.
 
-Dans un premier temps nous avons redéfinit la fonction "io_putchar" qui permet d'associer la fonction printf à la communication série.
+Dans un premier temps nous avons redéfini la fonction "io_putchar" qui permet d'associer la fonction printf à la communication série.
 
-Nous avons ensuite inclus dans le projet les fichiers « shell2.c » et « shell2.h » qui contiennent le code d'un shell réalisé par notre professeur. Ce shell permet de réaliser des fonctions associées à un nom d'appelle à écrire par l'utilisateur. Il est facile de rajouter de nouvelles fonctions à ce shell mais aussi de travailler avec des interruptions puisque le fonctionnement du shell n'est pas bloquant. En effet l'appel aux fonctions du shell n'a lieu qu'à l'initialisation de la carte ainsi que lorsque le flag uartRxReceived est passé à True lors d'une interruption.
+Nous avons ensuite inclus dans le projet les fichiers « shell2.c » et « shell2.h » qui contiennent le code d'un shell réalisé par notre professeur. Ce shell permet de réaliser des fonctions associées à un nom d'appel à écrire par l'utilisateur. Il est facile de rajouter de nouvelles fonctions à ce shell mais aussi de travailler avec des interruptions puisque le fonctionnement du shell n'est pas bloquant. En effet l'appel aux fonctions du shell n'a lieu qu'à l'initialisation de la carte ainsi que lorsque le flag uartRxReceived est passé à True lors d'une interruption.
 
 Le Shell est muni d'une fonction help qui définit les différentes commandes qu'on peut effectuer ainsi qu'une description des fonctions.
 Une fonction Pinout permet notamment de retrouver quels sont les branchements à réaliser pour pouvoir faire fonctionner l'onduleur.
@@ -90,7 +90,7 @@ Ainsi, La valeur du deadtime pour un ratio de 320 correspond à une valeur de DT
 ![image](https://user-images.githubusercontent.com/113909680/210463052-790302da-0a43-412f-b76d-c4c1dd5ef6e6.png)
 
 
-Aussi nous avons fixé la valeur du alpha à 512 = ARR_MAX_VALUE / 2 afin d'avoir une valeur moyenne vu par la MCC à 0V. Cela permet au moteur de rester statique et de n'appeller aucun courant à l'initialisation.
+Aussi nous avons fixé la valeur du alpha à 512 = ARR_MAX_VALUE / 2 afin d'avoir une valeur moyenne vue par la MCC à 0V. Cela permet au moteur de rester statique et de n'appeller aucun courant à l'initialisation.
 
 La commande des deux channels est complémentaire. Cela signifie que si le CaptureCompareRegister du Channel1 est à la valeur x, alors le CaptureCompareRegister du Channel2 est à la valeur ARR_MAX_VALUE - x.
 
@@ -104,14 +104,14 @@ Afin d'enlever les sécurités de l'onduleur il suffit de fixer à l'état haut 
 
 Nous avons donc utilisé la fonction HAL_Delay(1) qui nous permet de manière bloquante d'attendre environ 1ms ce qui est largement supérieur aux 2us demandées. L'utilisation de HAL_Delay n'est pas dérangeante dans ce cas puisqu'elle n'intervient que dans la phase d'initialisation du module de puissance.
 
-Suite à cela nous avons configuré une fonction init_Onduleur() (qui devrait s'appeler start) qu'on appelle depuis le shell et permet de de retirer les sécurités du module de puissance et fixe les valeurs de CCR à ARR_MAX_VALUE/2 afin d'avoir une tension moyenne à 0V et n'appeler aucun courant.
-Celle-ci pouvait également être appelé en appuyant sur le bouton utilisateur, néanmoins nous avons préféré dédier ce bouton à l'activation (ou non) de l'écriture des données dans le shell. Le code est néanmoins toujours présent en commentaire pour répondre aux attentes du TP.
+Suite à cela nous avons configuré une fonction init_Onduleur() (qui devrait s'appeler start) qu'on appelle depuis le shell et permet de retirer les sécurités du module de puissance et fixe les valeurs de CCR à ARR_MAX_VALUE/2 afin d'avoir une tension moyenne à 0V et n'appeler aucun courant.
+Celle-ci pouvait également être appelée en appuyant sur le bouton utilisateur, néanmoins nous avons préféré dédier ce bouton à l'activation (ou non) de l'écriture des données dans le shell. Le code est néanmoins toujours présent en commentaire pour répondre aux attentes du TP.
 
 
 ### 3.3. Premiers tests
 
 
-Afin de commander la MCC nous avons définis une fonction setAlpha qui permet depuis le shell de fixer la valeur de alpha entre 0 et 100 (commande en %). 0 correspond à la vitesse maximale de la MCC dans le sens "négatif", 50 correspond à la position neutre où la MCC ne tourne pas et 100 correspond à la vitesse maximale dans le sens "positif".
+Afin de commander la MCC nous avons défini une fonction setAlpha qui permet depuis le shell de fixer la valeur de alpha entre 0 et 100 (commande en %). 0 correspond à la vitesse maximale de la MCC dans le sens "négatif", 50 correspond à la position neutre où la MCC ne tourne pas et 100 correspond à la vitesse maximale dans le sens "positif".
 
 Le moteur tourne dans le sens "positif" lorsque la valeur du CCR de la channel1 est supérieure à 512 (soit alpha > 50) et dans le sens "négatif" lorsque la valeur la valeur du CCR de la channel1 est inférieur à ARR_MAX_VALUE/2 (soit alpha < 50).
 Cependant si on demande à la MCC d'aller trop vite sans accélérer progressivement l'appel de courant est trop important et le module de puissance se met en sécurité.
@@ -142,11 +142,16 @@ La position angulaire est mesurée par le Timer4 à une fréquence de 16Hz.
 L'ensemble des fonctions en lien avec l'asservissement de la MCC se trouvent dans les fichiers "PI.c" et "PI.h".
 Nous avons réalisé un asservissement PI et non PID car le système de base est initialement un système stable. Le correcteur proportionnel permet d'augmenter la vitesse du système et l'intégrateur le rend stable. Le dérivateur n'est donc pas nécessaire dans ce cas.
 
+Rappel :
+K : rapidité
+I : precision
+D : stabilité
+
 Nous avons créé une structure PIController contenant toutes les informations d'un correcteur PI.
 
 ![image](https://user-images.githubusercontent.com/113909680/210430937-806d9c96-ad23-4eaf-a659-4da9c2473d7a.png)
 
-Ainsi puisque nous avons réalisés deux asservissements, les fonctions sont factorisées et les instances sont réalisées proprement et clairement.
+Ainsi puisque nous avons réalisé deux asservissements, les fonctions sont factorisées et les instances sont réalisées proprement et clairement.
 
 Nous avons aussi réalisé des fonctions réalisant l'initialisation du correcteur (notamment lors de l'initialisation de l'onduleur) avec la fonction PIController_Init() ainsi que la mise à jour des valeurs avec la fonction PIController_Update().
 
@@ -191,7 +196,7 @@ Une fois l'asservissement mis en place nous avons ajouté au shell une fonction 
 - KP_ALPHA = 0.10
 - KI_ALPHA = 0.80
 
-En rentrant une consigne de 2.0A et en mesurant le courant effectif via une sonde on peut valider que l'asservissement fonctionne correctement.
+En rentrant une consigne de 2.0A et en mesurant le courant effectif via une sonde on peut valider le fait que l'asservissement fonctionne correctement.
 
 Théoriquement nous avions déterminé grâce à Matlab des valeurs du même ordre de grandeur mais moins robustes en réalité dû à la réalité du matériel.
 Nous trouvons que le système reste long à atteindre le régime permanent et cela va certainement poser problème pour l'asservissement en vitesse.
@@ -226,7 +231,7 @@ Pour obtenir la vitesse en tr/min on mesure entre deux instant le nombre d'incr�
 Omega = (incrément / 1024) / (1 / f_echantillonage / 60) en tr/min
 
 
-#### 4.3.3. Mise en place de l'asservissement
+#### 4.3.2. Mise en place de l'asservissement
 
 La mise en place de l'asservissement est très similaire à la mise en place de l'asservissement en courant. 
 L'entrée du correcteur est la consigne de vitesse en tr/min, sa sortie est la valeur de consigne de courant en A.
